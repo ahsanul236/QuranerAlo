@@ -4,3 +4,8 @@ window.KORANER_ALO_CONFIG = {
   supabaseAnonKey: 'sb_publishable_pnFGXjTcg_Mbh8XKQrTd7Q_dZRR7_H1',
   workspaceId: 'koraner-alo'
 };
+(function(){
+  ['auth-ui.js','enhancer.js'].forEach(function(src){
+    var s=document.createElement('script'); s.src=src; s.defer=false; document.head.appendChild(s);
+  });
+})();
