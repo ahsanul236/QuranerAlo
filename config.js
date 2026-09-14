@@ -6,6 +6,9 @@ window.KORANER_ALO_CONFIG = {
 };
 (function(){
   ['auth-ui.js','enhancer.js'].forEach(function(src){
-    var s=document.createElement('script'); s.src=src; s.defer=false; document.head.appendChild(s);
+    var s=document.createElement('script');
+    s.src=src;
+    s.async=false;
+    document.body.appendChild(s);
   });
 })();
