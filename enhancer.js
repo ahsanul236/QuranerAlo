@@ -64,7 +64,6 @@
     return true;
   }
 
-  // Override the original Firebase-named hooks with Supabase.
   window.initCloudFirebase = loadCloud;
   window.pushStateToCloud = async function(){
     try{ badge('ক্লাউডে সেভ হচ্ছে…', true); await saveCloud(); }
@@ -138,13 +137,8 @@
     document.getElementById('tab-site-settings')?.classList.add('active'); fillSettings();
   };
 
-  const oldOnload=window.onload;
-  window.onload=function(e){
-    if(oldOnload) oldOnload(e);
-    addSettingsUI(); applyBrand();
-    setTimeout(loadCloud, 300);
-  };
-  if(document.readyState!=='loading'){
-    setTimeout(function(){addSettingsUI();applyBrand();if(window.KORANER_ACCESS_TOKEN) loadCloud();},50);
-  }
+  function boot(){ addSettingsUI(); applyBrand(); if(window.KORANER_ACCESS_TOKEN) loadCloud(); }
+  window.addEventListener('load', function(){ setTimeout(boot,150); });
+  window.addEventListener('koraner-auth-ready', function(){ setTimeout(loadCloud,50); });
+  if(document.readyState!=='loading') setTimeout(boot,50);
 })();
