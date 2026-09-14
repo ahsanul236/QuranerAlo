@@ -1,8 +1,6 @@
-// Koraner Alo cloud configuration
-// Replace the two placeholders below with your Supabase project's public URL and anon key.
-// IMPORTANT: never put a service_role/secret key in this file.
+// Public Supabase client configuration. Never put a service_role/secret key here.
 window.KORANER_ALO_CONFIG = {
-  supabaseUrl: 'https://YOUR-PROJECT.supabase.co',
-  supabaseAnonKey: 'YOUR_SUPABASE_ANON_PUBLIC_KEY',
+  supabaseUrl: 'https://nnhzcfjmmbzzjmocvonm.supabase.co',
+  supabaseAnonKey: 'sb_publishable_pnFGXjTcg_Mbh8XKQrTd7Q_dZRR7_H1',
   workspaceId: 'koraner-alo'
 };
