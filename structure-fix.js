@@ -135,6 +135,42 @@
     window.__kaVoucherNumberPatch=true;
   }
 
+  function patchAutoIds(){
+    if(window.__kaAutoIdsPatched)return;
+    const year2=()=>String(new Date().getFullYear()).slice(-2);
+    const nextId=(items,prefix,digits)=>{
+      const re=new RegExp('^'+prefix+'-'+year2()+'-(\\d+)$');
+      let max=0;
+      (items||[]).forEach(x=>{
+        const m=re.exec(String(x?.id||''));
+        if(m){const n=parseInt(m[1],10); if(Number.isFinite(n))max=Math.max(max,n);}
+      });
+      return prefix+'-'+year2()+'-'+String(max+1).padStart(digits,'0');
+    };
+    const student=()=>{
+      const e=document.getElementById('form-student-id'); if(!e||!window.state?.students)return;
+      e.value=nextId(window.state.students,'QAS',3);
+      e.readOnly=true;
+      e.placeholder='QAS-'+year2()+'-001';
+    };
+    const teacher=()=>{
+      const e=document.getElementById('form-staff-id'); if(!e||!window.state?.staffs)return;
+      e.value=nextId(window.state.staffs,'QAT',2);
+      e.readOnly=true;
+      e.placeholder='QAT-'+year2()+'-01';
+    };
+    const wrapOpen=(name,fn)=>{
+      if(typeof window[name]!=='function'||window['__kaWrapped_'+name])return;
+      const orig=window[name];
+      window[name]=function(editId){const r=orig.apply(this,arguments);if(!editId)fn();else document.getElementById(name==='openStudentModal'?'form-student-id':'form-staff-id')?.setAttribute('readonly','true');return r;};
+      window['__kaWrapped_'+name]=true;
+    };
+    const start=()=>{wrapOpen('openStudentModal',student);wrapOpen('openStaffModal',teacher);};
+    start(); setTimeout(start,400); setTimeout(start,1000); setTimeout(start,1800);
+    setTimeout(student,1300); setTimeout(teacher,1300);
+    window.__kaAutoIdsPatched=true;
+  }
+
   function hideSheets(){
     document.getElementById('tab-sheets-guide')?.remove();
     document.getElementById('view-sheets-guide')?.classList.add('hidden');
@@ -163,6 +199,7 @@
     if(!mergeReports())return;
     patchSwitchTab();
     patchVoucherNumbers();
+    patchAutoIds();
     reportTab();
     hideSheets();
     done=true;
