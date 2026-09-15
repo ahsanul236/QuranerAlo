@@ -82,6 +82,30 @@
     }
   }
 
+  function detectDeleteTarget(ev){
+    const el=ev.target?.closest?.('button');
+    if(!el) return null;
+    if(!el.querySelector('.fa-trash')) return null;
+    const studentBody=el.closest('#students-table-body');
+    const staffBody=el.closest('#staffs-table-body');
+    if(!studentBody && !staffBody) return null;
+    const tr=el.closest('tr');
+    const firstCell=tr?.querySelector('td');
+    const id=String(firstCell?.textContent||'').trim();
+    if(!id) return null;
+    return {kind:studentBody?'student':'staff',id};
+  }
+
+  // This runs on the document during capture, before older button-level handlers.
+  document.addEventListener('click',function(ev){
+    const target=detectDeleteTarget(ev);
+    if(!target) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    ev.stopImmediatePropagation();
+    rootDelete(target.kind,target.id);
+  },true);
+
   window.deleteStudent=function(id){rootDelete('student',id);};
   window.deleteStaff=function(id){rootDelete('staff',id);};
   window.KA_ROOT_DELETE=rootDelete;
