@@ -1,211 +1,29 @@
 (function(){
   'use strict';
-  const $=s=>document.querySelector(s);
   const icon={students:'fa-solid fa-user-graduate text-cyan-500',payments:'fa-solid fa-hand-holding-dollar text-emerald-500',staffs:'fa-solid fa-user-tie text-amber-500'};
   let done=false;
-
-  function nav(){return $('header .max-w-7xl.mx-auto.flex.gap-2.text-sm');}
-  function newTab(id,label,ico,click){
-    const b=document.createElement('button'); b.id=id;
-    b.className='tab-btn py-2.5 px-3 font-medium flex items-center justify-center gap-2 rounded-xl transition text-slate-700 whitespace-nowrap';
-    b.innerHTML='<i class="'+ico+'"></i><span>'+label+'</span>'; b.onclick=click; return b;
-  }
-
-  function rebuildSection(name,title,subtitle){
-    const old=document.getElementById('view-'+name);
-    if(!old||old.dataset.kaRebuilt==='1')return;
-    const wasVisible=!old.classList.contains('hidden');
-    const sec=document.createElement('section'); sec.id='view-'+name; sec.className=old.className+' ka-new-section';
-    sec.innerHTML='<div class="ka-section-head"><div><h2>'+title+'</h2><p>'+subtitle+'</p></div></div>';
-    while(old.firstChild)sec.appendChild(old.firstChild);
-    if(!wasVisible)sec.classList.add('hidden');
-    sec.dataset.kaRebuilt='1'; old.replaceWith(sec);
-  }
-
-  function rebuildCoreTabs(){
-    const n=nav(); if(!n||n.dataset.kaCoreTabs==='1')return;
-    ['tab-students','tab-payments','tab-staffs','tab-monthly-sheet','tab-sheets-guide'].forEach(id=>document.getElementById(id)?.remove());
-    const anchor=document.getElementById('tab-dashboard'); if(!anchor)return;
-    const b1=newTab('tab-students','স্টুডেন্ট লিস্ট',icon.students,()=>window.switchTab?.('students'));
-    const b2=newTab('tab-payments','স্টুডেন্ট ফি জমা',icon.payments,()=>window.switchTab?.('payments'));
-    const b3=newTab('tab-staffs','শিক্ষক ও স্টাফ স্যালারি',icon.staffs,()=>window.switchTab?.('staffs'));
-    anchor.after(b1,b2,b3);
-    n.dataset.kaCoreTabs='1';
-  }
-
-  function mergeReports(){
-    if(document.getElementById('view-report-merged'))return true;
-    const monthly=document.getElementById('view-monthly-sheet');
-    const pro=document.getElementById('ka-pro-view');
-    if(!monthly||!pro)return false;
-    const sec=document.createElement('section'); sec.id='view-report-merged'; sec.className='hidden space-y-6 ka-merged-report-shell';
-    sec.innerHTML='<div class="ka-section-head"><div><h2>রিপোর্ট ও অ্যানালিটিক্স</h2><p>মাসিক আয়-ব্যয়, ক্যাশ বুক, বেতন, অন্যান্য ব্যয় ও নিট ব্যালেন্স—সব হিসাব এক জায়গায়</p></div></div>';
-    sec.appendChild(pro);
-    while(monthly.firstChild)sec.appendChild(monthly.firstChild);
-    monthly.remove();
-    document.querySelector('main')?.appendChild(sec);
-    return true;
-  }
-
-  function reportTab(){
-    const n=nav(); if(!n||document.getElementById('tab-pro-reports'))return;
-    const staff=document.getElementById('tab-staffs'); if(!staff)return;
-    const b=newTab('tab-pro-reports','রিপোর্ট ও অ্যানালিটিক্স','fa-solid fa-chart-line text-indigo-500',showMerged);
-    staff.after(b);
-  }
-
-  function hideExtraViews(){
-    ['view-report-merged','ka-pro-view','ka-settings-view','ka-admin-view','ka-expenses-view','ka-audit-view'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
-    ['tab-pro-reports','tab-site-settings','tab-user-admin','tab-other-expenses','tab-audit-logs'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
-  }
-
-  function showMerged(){
-    ['dashboard','students','payments','staffs','invoice','settings','sheets-guide'].forEach(t=>{
-      document.getElementById('view-'+t)?.classList.add('hidden');
-      document.getElementById('tab-'+t)?.classList.remove('active');
-    });
-    hideExtraViews();
-    const v=document.getElementById('view-report-merged'); if(v)v.classList.remove('hidden');
-    const p=document.getElementById('ka-pro-view'); if(p)p.classList.remove('hidden');
-    document.getElementById('tab-pro-reports')?.classList.add('active');
-    const m=document.getElementById('ka-pro-report-month'); if(m)m.dispatchEvent(new Event('change',{bubbles:true}));
-    const oldMonth=document.getElementById('monthly-month'); if(oldMonth) oldMonth.dispatchEvent(new Event('change',{bubbles:true}));
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
-
-  function patchSwitchTab(){
-    if(window.__kaStructureSwitchPatched||typeof window.switchTab!=='function')return;
-    const original=window.switchTab;
-    window.switchTab=function(tab){
-      if(tab==='monthly-sheet')return showMerged();
-      const needStubs=['monthly-sheet','sheets-guide'];
-      const made=[];
-      needStubs.forEach(t=>{
-        if(!document.getElementById('view-'+t)){
-          const v=document.createElement('section'); v.id='view-'+t; v.className='hidden'; v.style.display='none'; document.querySelector('main')?.appendChild(v); made.push(v);
-        }
-        if(!document.getElementById('tab-'+t)){
-          const b=document.createElement('button'); b.id='tab-'+t; b.className='hidden'; b.style.display='none'; document.querySelector('header .max-w-7xl.mx-auto.flex.gap-2.text-sm')?.appendChild(b); made.push(b);
-        }
-      });
-      hideExtraViews();
-      try{original(tab);}finally{made.forEach(x=>x.remove());}
-      if(tab==='invoice'){
-        document.getElementById('view-report-merged')?.classList.add('hidden');
-        document.getElementById('ka-pro-view')?.classList.add('hidden');
-        document.getElementById('tab-pro-reports')?.classList.remove('active');
-      }
-    };
-    window.__kaStructureSwitchPatched=true;
-  }
-
-  function patchVoucherNumbers(){
-    if(window.__kaVoucherNumberPatch)return;
-    const hasState=()=>window.state&&Array.isArray(window.state.studentPayments)&&Array.isArray(window.state.salaryPayments);
-    const next=(items,prefix,start)=>{
-      const used=new Set((items||[]).map(x=>String(x?.id||'')).filter(Boolean));
-      let n=Number(start)||1001; while(used.has(prefix+'-'+n))n++; return prefix+'-'+n;
-    };
-    const normalize=()=>{
-      if(!hasState())return false;
-      let changed=false;
-      const fix=(items,prefix,start)=>{
-        const seen=new Set();
-        (items||[]).forEach(x=>{
-          if(!x)return;
-          const id=String(x.id||'');
-          if(!id || seen.has(id)){
-            x.id=next(items,prefix,start); changed=true;
-          }
-          seen.add(String(x.id));
-        });
-      };
-      fix(window.state.studentPayments,'INV',1001);
-      fix(window.state.salaryPayments,'SAL',2001);
-      return changed;
-    };
-    const wrap=()=>{
-      if(typeof window.saveData!=='function'||window.__kaVoucherSaveWrapped)return;
-      const orig=window.saveData;
-      window.saveData=function(){normalize(); return orig.apply(this,arguments);};
-      window.__kaVoucherSaveWrapped=true;
-    };
-    wrap();
-    setTimeout(wrap,500); setTimeout(wrap,1500);
-    window.__kaVoucherNumberPatch=true;
-  }
-
-  function patchAutoIds(){
-    if(window.__kaAutoIdsPatched)return;
-    const year2=()=>String(new Date().getFullYear()).slice(-2);
-    const nextId=(items,prefix,digits)=>{
-      const re=new RegExp('^'+prefix+'-'+year2()+'-(\\d+)$');
-      let max=0;
-      (items||[]).forEach(x=>{
-        const m=re.exec(String(x?.id||''));
-        if(m){const n=parseInt(m[1],10); if(Number.isFinite(n))max=Math.max(max,n);}
-      });
-      return prefix+'-'+year2()+'-'+String(max+1).padStart(digits,'0');
-    };
-    const student=()=>{
-      const e=document.getElementById('form-student-id'); if(!e||!window.state?.students)return;
-      e.value=nextId(window.state.students,'QAS',3);
-      e.readOnly=true;
-      e.placeholder='QAS-'+year2()+'-001';
-    };
-    const teacher=()=>{
-      const e=document.getElementById('form-staff-id'); if(!e||!window.state?.staffs)return;
-      e.value=nextId(window.state.staffs,'QAT',2);
-      e.readOnly=true;
-      e.placeholder='QAT-'+year2()+'-01';
-    };
-    const wrapOpen=(name,fn)=>{
-      if(typeof window[name]!=='function'||window['__kaWrapped_'+name])return;
-      const orig=window[name];
-      window[name]=function(editId){const r=orig.apply(this,arguments);if(!editId)fn();else document.getElementById(name==='openStudentModal'?'form-student-id':'form-staff-id')?.setAttribute('readonly','true');return r;};
-      window['__kaWrapped_'+name]=true;
-    };
-    const start=()=>{wrapOpen('openStudentModal',student);wrapOpen('openStaffModal',teacher);};
-    start(); setTimeout(start,400); setTimeout(start,1000); setTimeout(start,1800);
-    setTimeout(student,1300); setTimeout(teacher,1300);
-    window.__kaAutoIdsPatched=true;
-  }
-
-  function hideSheets(){
-    document.getElementById('tab-sheets-guide')?.remove();
-    document.getElementById('view-sheets-guide')?.classList.add('hidden');
-  }
-
-  function css(){
-    if(document.getElementById('ka-structure-style'))return;
-    const s=document.createElement('style'); s.id='ka-structure-style'; s.textContent=`
-      .ka-new-section{width:100%}.ka-section-head{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:18px;margin-bottom:10px;box-shadow:0 6px 20px rgba(15,23,42,.05)}
-      .ka-section-head h2{margin:0;color:#0f172a;font-size:22px;font-weight:800}.ka-section-head p{margin:5px 0 0;color:#64748b;font-size:12px}
-      #view-report-merged{width:100%}#view-report-merged #ka-pro-view{width:100%}#view-report-merged #ka-pro-view.hidden{display:block!important}
-      #view-report-merged #ka-pro-view>*{max-width:none}
-      header .tab-btn{min-height:44px}
-      @media(max-width:640px){.ka-section-head{padding:14px}.ka-section-head h2{font-size:19px}}
-    `;document.head.appendChild(s);
-  }
-
-  function run(){
-    if(done)return;
-    css();
-    if(!nav()||!document.getElementById('tab-dashboard'))return;
-    rebuildSection('students','স্টুডেন্ট লিস্ট','স্টুডেন্ট নিবন্ধন, তথ্য সম্পাদনা, বকেয়া ও তালিকা ব্যবস্থাপনা');
-    rebuildSection('payments','স্টুডেন্ট ফি জমা','ফি সংগ্রহ, মাসভিত্তিক পেমেন্ট, বকেয়া ও ইনভয়েস ব্যবস্থাপনা');
-    rebuildSection('staffs','শিক্ষক ও স্টাফ স্যালারি','শিক্ষক/স্টাফ তথ্য, বেতন প্রদান, বেতন ইতিহাস ও ভাউচার');
-    rebuildCoreTabs();
-    if(!mergeReports())return;
-    patchSwitchTab();
-    patchVoucherNumbers();
-    patchAutoIds();
-    reportTab();
-    hideSheets();
-    done=true;
-  }
-
-  const timer=setInterval(()=>{run();if(done)clearInterval(timer)},500);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else setTimeout(run,400);
-  window.KA_SHOW_MERGED_REPORT=showMerged;
+  const year2=()=>String(new Date().getFullYear()).slice(-2);
+  const admin=()=>window.KA_MEMBER?.status==='active'&&window.KA_MEMBER?.role==='admin';
+  const money=n=>'৳ '+Number(n||0).toLocaleString('bn-BD',{maximumFractionDigits:0});
+  const nav=()=>document.querySelector('header .max-w-7xl.mx-auto.flex.gap-2.text-sm');
+  function newTab(id,label,ico,click){const b=document.createElement('button');b.id=id;b.className='tab-btn py-2.5 px-3 font-medium flex items-center justify-center gap-2 rounded-xl transition text-slate-700 whitespace-nowrap';b.innerHTML='<i class="'+ico+'"></i><span>'+label+'</span>';b.onclick=click;return b;}
+  function rebuildSection(name,title,subtitle){const old=document.getElementById('view-'+name);if(!old||old.dataset.kaRebuilt)return;const sec=document.createElement('section');sec.id='view-'+name;sec.className=old.className+' ka-new-section';sec.innerHTML='<div class="ka-section-head"><div><h2>'+title+'</h2><p>'+subtitle+'</p></div></div>';while(old.firstChild)sec.appendChild(old.firstChild);old.replaceWith(sec);sec.dataset.kaRebuilt='1';}
+  function rebuildCoreTabs(){const n=nav();if(!n||n.dataset.kaCoreTabs)return;['tab-students','tab-payments','tab-staffs','tab-monthly-sheet','tab-sheets-guide'].forEach(id=>document.getElementById(id)?.remove());const a=document.getElementById('tab-dashboard');if(!a)return;a.after(newTab('tab-students','স্টুডেন্ট লিস্ট',icon.students,()=>window.switchTab?.('students')),newTab('tab-payments','স্টুডেন্ট ফি জমা',icon.payments,()=>window.switchTab?.('payments')),newTab('tab-staffs','শিক্ষক ও স্টাফ স্যালারি',icon.staffs,()=>window.switchTab?.('staffs')));n.dataset.kaCoreTabs='1';}
+  function reportMarkup(){return '<div class="ka-section-head"><div><h2>রিপোর্ট ও অ্যানালিটিক্স</h2><p>মাসভিত্তিক আয়, বেতন, অন্যান্য ব্যয়, নিট ব্যালেন্স ও ক্যাশ বুক এক জায়গায়</p></div></div><div class="ka-report-toolbar"><input id="ka-merged-report-month" type="month" class="glass-input p-3 rounded-xl" value="'+new Date().toISOString().slice(0,7)+'"><button id="ka-merged-report-refresh" class="ka-report-btn">রিফ্রেশ</button><button id="ka-merged-report-print" class="ka-report-btn dark">প্রিন্ট / PDF</button></div><div class="ka-report-grid"><div class="ka-pro-kpi"><div>মোট আয়</div><strong id="ka-m-inc">৳ ০</strong></div><div class="ka-pro-kpi"><div>স্যালারি</div><strong id="ka-m-sal">৳ ০</strong></div><div class="ka-pro-kpi"><div>অন্যান্য ব্যয়</div><strong id="ka-m-oth">৳ ০</strong></div><div class="ka-pro-kpi"><div>নীট ব্যালেন্স</div><strong id="ka-m-net">৳ ০</strong></div><div class="ka-pro-kpi"><div>লেনদেন</div><strong id="ka-m-count">০</strong></div></div><div class="ka-pro-card"><div class="ka-report-scroll"><table class="ka-pro-table"><thead><tr><th>তারিখ</th><th>ধরন</th><th>বিবরণ</th><th style="text-align:right">পরিমাণ</th></tr></thead><tbody id="ka-m-rows"></tbody></table></div></div>'}
+  function mergeReports(){if(document.getElementById('view-report-merged'))return true;const monthly=document.getElementById('view-monthly-sheet');if(!monthly)return false;const sec=document.createElement('section');sec.id='view-report-merged';sec.className='hidden space-y-6 ka-merged-report-shell';sec.innerHTML=reportMarkup();while(monthly.firstChild)sec.appendChild(monthly.firstChild);monthly.remove();document.querySelector('main')?.appendChild(sec);bindReport();document.getElementById('ka-pro-view')?.classList.add('hidden');return true;}
+  function calc(month){const s=window.state||{};const i=(s.studentPayments||[]).filter(x=>String(x.date||'').startsWith(month));const sa=(s.salaryPayments||[]).filter(x=>String(x.date||'').startsWith(month));const o=(s.expenses||[]).filter(x=>String(x.date||'').startsWith(month));const income=i.reduce((a,x)=>a+Number(x.paidAmount||0),0),salary=sa.reduce((a,x)=>a+Number(x.paidAmount||0),0),other=o.reduce((a,x)=>a+Number(x.amount||0),0);const rows=[...i.map(x=>({date:x.date||'',type:'আয়',title:'স্টুডেন্ট ফি — '+(x.studentName||''),amount:Number(x.paidAmount||0)})),...sa.map(x=>({date:x.date||'',type:'বেতন',title:'স্যালারি — '+(x.staffName||''),amount:-Number(x.paidAmount||0)})),...o.map(x=>({date:x.date||'',type:'অন্যান্য ব্যয়',title:x.title||'',amount:-Number(x.amount||0)}))].sort((a,b)=>String(b.date).localeCompare(String(a.date)));return{income,salary,other,net:income-salary-other,rows};}
+  function refreshReport(){const root=document.getElementById('view-report-merged');if(!root)return;const m=document.getElementById('ka-merged-report-month')?.value||new Date().toISOString().slice(0,7);const r=calc(m);const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};set('ka-m-inc',money(r.income));set('ka-m-sal',money(r.salary));set('ka-m-oth',money(r.other));set('ka-m-net',money(r.net));set('ka-m-count',r.rows.length.toLocaleString('bn-BD'));const box=document.getElementById('ka-m-rows');if(box)box.innerHTML=r.rows.length?r.rows.map(x=>'<tr><td>'+x.date+'</td><td>'+x.type+'</td><td>'+x.title+'</td><td class="num">'+(x.amount<0?'-':'')+money(Math.abs(x.amount))+'</td></tr>').join(''):'<tr><td colspan="4" style="text-align:center;padding:24px;color:#94a3b8">এই মাসে কোনো লেনদেন নেই।</td></tr>';}
+  function bindReport(){const m=document.getElementById('ka-merged-report-month');if(!m||m.dataset.bound)return;m.onchange=refreshReport;document.getElementById('ka-merged-report-refresh')?.addEventListener('click',refreshReport);document.getElementById('ka-merged-report-print')?.addEventListener('click',()=>{const w=window.open('','_blank');if(!w)return;w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>রিপোর্ট</title><style>body{font-family:Arial,sans-serif;padding:24px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ddd}</style></head><body>'+document.getElementById('view-report-merged').innerHTML+'</body></html>');w.document.close();setTimeout(()=>w.print(),200);});m.dataset.bound='1';refreshReport();}
+  function reportTab(){const n=nav();if(!n||!admin()||document.getElementById('tab-pro-reports'))return;const staff=document.getElementById('tab-staffs');if(!staff)return;staff.after(newTab('tab-pro-reports','রিপোর্ট ও অ্যানালিটিক্স','fa-solid fa-chart-line text-indigo-500',showMerged));}
+  function hideAll(){['dashboard','students','payments','staffs','invoice','settings','sheets-guide'].forEach(t=>{document.getElementById('view-'+t)?.classList.add('hidden');document.getElementById('tab-'+t)?.classList.remove('active')});['ka-settings-view','ka-admin-view','ka-expenses-view','ka-audit-view','ka-pro-view'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));['tab-site-settings','tab-user-admin','tab-other-expenses','tab-audit-logs','tab-pro-reports'].forEach(id=>document.getElementById(id)?.classList.remove('active'));}
+  function showMerged(){if(!admin())return;hideAll();document.getElementById('view-report-merged')?.classList.remove('hidden');document.getElementById('tab-pro-reports')?.classList.add('active');refreshReport();window.scrollTo({top:0});}
+  function patchSwitchTab(){if(window.__kaStructureSwitchPatched||typeof window.switchTab!=='function')return;const original=window.switchTab;window.switchTab=function(tab){if(tab==='monthly-sheet')return showMerged();const made=[];['monthly-sheet','sheets-guide'].forEach(t=>{if(!document.getElementById('view-'+t)){const v=document.createElement('section');v.id='view-'+t;v.className='hidden';v.style.display='none';document.querySelector('main')?.appendChild(v);made.push(v);}if(!document.getElementById('tab-'+t)){const b=document.createElement('button');b.id='tab-'+t;b.style.display='none';nav()?.appendChild(b);made.push(b);}});hideAll();try{original(tab);}catch(e){console.warn('safe tab switch',e)}finally{made.forEach(x=>x.remove());}document.getElementById('tab-'+tab)?.classList.add('active');};window.__kaStructureSwitchPatched=true;}
+  function autoId(items,prefix,pad){const re=new RegExp('^'+prefix+'-'+year2()+'-(\\d+)$');let max=0;(items||[]).forEach(x=>{const m=re.exec(String(x?.id||''));if(m)max=Math.max(max,Number(m[1]));});return prefix+'-'+year2()+'-'+String(max+1).padStart(pad,'0');}
+  function staffSelector(){const id=document.getElementById('form-staff-id'),name=document.getElementById('form-staff-name');if(!id||!name)return;let sel=document.getElementById('form-staff-type');if(!sel){const holder=id.parentElement;const wrap=document.createElement('div');wrap.innerHTML='<label class="block font-semibold text-slate-300 mb-1">কর্মীর ধরন *</label><select id="form-staff-type" class="glass-input w-full p-2.5 rounded-xl outline-none mb-2"><option value="QAT">শিক্ষক — QAT</option><option value="QAH">স্টাফ — QAH</option></select>';holder.parentElement.insertBefore(wrap,holder);}sel=document.getElementById('form-staff-type');return sel;}
+  function patchAutoIds(){if(window.__kaAutoIdsPatched)return;const st=()=>{if(typeof window.openStudentModal!=='function'||window.__kaStudentOpenWrapped)return;const o=window.openStudentModal;window.openStudentModal=function(e){const r=o.apply(this,arguments);if(!e){const f=document.getElementById('form-student-id');if(f&&window.state?.students){f.value=autoId(window.state.students,'QAS',3);f.readOnly=true;}}return r;};window.__kaStudentOpenWrapped=true;};const sf=()=>{if(typeof window.openStaffModal!=='function'||window.__kaStaffOpenWrapped)return;const o=window.openStaffModal;window.openStaffModal=function(e){const r=o.apply(this,arguments);const f=document.getElementById('form-staff-id');if(!f)return r;const sel=staffSelector();if(sel){if(e){sel.value=String(f.value||'').startsWith('QAH-')?'QAH':'QAT';sel.disabled=true;}else{sel.disabled=false;f.readOnly=true;f.value=autoId(window.state?.staffs||[],sel.value,2);sel.onchange=()=>{f.value=autoId(window.state?.staffs||[],sel.value,2);};}}return r;};window.__kaStaffOpenWrapped=true;};st();sf();setTimeout(st,400);setTimeout(sf,400);setTimeout(st,1000);setTimeout(sf,1000);window.__kaAutoIdsPatched=true;}
+  function patchVouchers(){if(window.__kaVoucherNumberPatch)return;const wrap=()=>{if(typeof window.saveData!=='function'||window.__kaVoucherSaveWrapped)return;const o=window.saveData;window.saveData=function(){const fix=(arr,prefix,start)=>{const used=new Set((arr||[]).map(x=>String(x?.id||'')).filter(Boolean));(arr||[]).forEach(x=>{if(!x)return;if(!x.id){let n=start;while(used.has(prefix+'-'+n))n++;x.id=prefix+'-'+n;used.add(x.id);}});};fix(window.state?.studentPayments,'INV',1001);fix(window.state?.salaryPayments,'SAL',2001);return o.apply(this,arguments);};window.__kaVoucherSaveWrapped=true;};wrap();setTimeout(wrap,600);setTimeout(wrap,1500);window.__kaVoucherNumberPatch=true;}
+  function hideSheets(){document.getElementById('tab-sheets-guide')?.remove();document.getElementById('view-sheets-guide')?.classList.add('hidden');}
+  function css(){if(document.getElementById('ka-structure-style'))return;const s=document.createElement('style');s.id='ka-structure-style';s.textContent=`.ka-new-section{width:100%}.ka-section-head{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:18px;margin-bottom:10px;box-shadow:0 6px 20px rgba(15,23,42,.05)}.ka-section-head h2{margin:0;color:#0f172a;font-size:22px;font-weight:800}.ka-section-head p{margin:5px 0 0;color:#64748b;font-size:12px}#view-report-merged{width:100%}.ka-report-toolbar{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-bottom:10px}.ka-report-btn{background:#fff;border:1px solid #dbe2ea;border-radius:10px;padding:9px 12px;font-weight:700;font-size:12px}.ka-report-btn.dark{background:#0f172a;color:#fff}.ka-report-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:10px}.ka-pro-kpi{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px}.ka-pro-kpi>div{font-size:11px;color:#64748b}.ka-pro-kpi>strong{display:block;font-size:23px;margin-top:3px;color:#0f172a}.ka-pro-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px}.ka-report-scroll{overflow:auto;max-height:52vh}.ka-pro-table{width:100%;border-collapse:collapse}.ka-pro-table th,.ka-pro-table td{padding:9px;border-bottom:1px solid #edf0f4;font-size:12px;text-align:left}.ka-pro-table th{color:#64748b;background:#f8fafc}.ka-pro-table td.num{text-align:right;font-weight:700}@media(max-width:900px){.ka-report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){.ka-report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ka-pro-kpi>strong{font-size:19px}.ka-report-toolbar{justify-content:stretch}.ka-report-toolbar>*{flex:1 1 140px}}`;document.head.appendChild(s);}
+  function run(){if(done)return;css();if(!nav()||!document.getElementById('tab-dashboard'))return;rebuildSection('students','স্টুডেন্ট লিস্ট','স্টুডেন্ট নিবন্ধন, তথ্য সম্পাদনা, বকেয়া ও তালিকা ব্যবস্থাপনা');rebuildSection('payments','স্টুডেন্ট ফি জমা','ফি সংগ্রহ, মাসভিত্তিক পেমেন্ট, বকেয়া ও ইনভয়েস ব্যবস্থাপনা');rebuildSection('staffs','শিক্ষক ও স্টাফ স্যালারি','শিক্ষক/স্টাফ তথ্য, বেতন প্রদান, বেতন ইতিহাস ও ভাউচার');rebuildCoreTabs();if(!mergeReports())return;patchSwitchTab();patchAutoIds();patchVouchers();reportTab();hideSheets();done=true;}
+  const timer=setInterval(()=>{run();if(done)clearInterval(timer)},350);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else setTimeout(run,250);window.addEventListener('koraner-auth-ready',()=>setTimeout(reportTab,120));window.KA_SHOW_MERGED_REPORT=showMerged;
 })();
