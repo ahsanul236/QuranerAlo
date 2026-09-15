@@ -54,13 +54,17 @@
     staff.after(b);
   }
 
+  function hideExtraViews(){
+    ['view-report-merged','ka-pro-view','ka-settings-view','ka-admin-view','ka-expenses-view','ka-audit-view'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+    ['tab-pro-reports','tab-site-settings','tab-user-admin','tab-other-expenses','tab-audit-logs'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+  }
+
   function showMerged(){
     ['dashboard','students','payments','staffs','invoice','settings','sheets-guide'].forEach(t=>{
       document.getElementById('view-'+t)?.classList.add('hidden');
       document.getElementById('tab-'+t)?.classList.remove('active');
     });
-    ['ka-settings-view','ka-admin-view','ka-expenses-view','ka-audit-view'].forEach(id=>$('#'+id)?.classList.add('hidden'));
-    ['tab-site-settings','tab-user-admin','tab-other-expenses','tab-audit-logs'].forEach(id=>$('#'+id)?.classList.remove('active'));
+    hideExtraViews();
     const v=document.getElementById('view-report-merged'); if(v)v.classList.remove('hidden');
     const p=document.getElementById('ka-pro-view'); if(p)p.classList.remove('hidden');
     document.getElementById('tab-pro-reports')?.classList.add('active');
@@ -84,6 +88,7 @@
           const b=document.createElement('button'); b.id='tab-'+t; b.className='hidden'; b.style.display='none'; document.querySelector('header .max-w-7xl.mx-auto.flex.gap-2.text-sm')?.appendChild(b); made.push(b);
         }
       });
+      hideExtraViews();
       try{original(tab);}finally{made.forEach(x=>x.remove());}
       if(tab==='invoice'){
         document.getElementById('view-report-merged')?.classList.add('hidden');
