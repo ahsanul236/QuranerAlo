@@ -94,6 +94,42 @@
     window.__kaStructureSwitchPatched=true;
   }
 
+  function patchVoucherNumbers(){
+    if(window.__kaVoucherNumberPatch)return;
+    const hasState=()=>window.state&&Array.isArray(window.state.studentPayments)&&Array.isArray(window.state.salaryPayments);
+    const next=(items,prefix,start)=>{
+      const used=new Set((items||[]).map(x=>String(x?.id||'')).filter(Boolean));
+      let n=Number(start)||1001; while(used.has(prefix+'-'+n))n++; return prefix+'-'+n;
+    };
+    const normalize=()=>{
+      if(!hasState())return false;
+      let changed=false;
+      const fix=(items,prefix,start)=>{
+        const seen=new Set();
+        (items||[]).forEach(x=>{
+          if(!x)return;
+          const id=String(x.id||'');
+          if(!id || seen.has(id)){
+            x.id=next(items,prefix,start); changed=true;
+          }
+          seen.add(String(x.id));
+        });
+      };
+      fix(window.state.studentPayments,'INV',1001);
+      fix(window.state.salaryPayments,'SAL',2001);
+      return changed;
+    };
+    const wrap=()=>{
+      if(typeof window.saveData!=='function'||window.__kaVoucherSaveWrapped)return;
+      const orig=window.saveData;
+      window.saveData=function(){normalize(); return orig.apply(this,arguments);};
+      window.__kaVoucherSaveWrapped=true;
+    };
+    wrap();
+    setTimeout(wrap,500); setTimeout(wrap,1500);
+    window.__kaVoucherNumberPatch=true;
+  }
+
   function hideSheets(){
     document.getElementById('tab-sheets-guide')?.remove();
     document.getElementById('view-sheets-guide')?.classList.add('hidden');
@@ -121,6 +157,7 @@
     rebuildCoreTabs();
     if(!mergeReports())return;
     patchSwitchTab();
+    patchVoucherNumbers();
     reportTab();
     hideSheets();
     done=true;
