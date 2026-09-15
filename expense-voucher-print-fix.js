@@ -17,16 +17,19 @@
       @page{size:A4;margin:15mm}
       body{font-family:Arial,"Noto Sans Bengali",sans-serif;color:#172033;margin:0;background:#fff}
       .wrap{max-width:760px;margin:auto}
-      .head{display:flex;align-items:center;gap:18px;border-bottom:2px solid #c9a33b;padding-bottom:14px}
+      .head{display:flex;align-items:flex-start;gap:18px;border-bottom:2px solid #c9a33b;padding-bottom:14px}
       .logo{width:90px;height:90px;object-fit:contain}
-      .brand{flex:1}.brand h1{margin:0;font-size:25px;line-height:1.15}.brand p{margin:4px 0;color:#555;font-size:13px}
+      .brand{flex:1;min-width:0}.brand h1{margin:0;font-size:25px;line-height:1.15}.brand p{margin:4px 0;color:#555;font-size:13px}
       .contact{margin-top:5px;font-size:13px;color:#555;line-height:1.4}.contact-line{display:block;margin:0 0 1px}
-      .meta{margin-top:18px;display:flex;justify-content:space-between;gap:20px}.box{border:1px solid #ddd;border-radius:10px;padding:12px}
+      .meta{width:180px;flex:0 0 180px;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding-top:1px}
+      .authority-pill{display:inline-block;background:#d1fae5;color:#065f46;font-weight:800;font-size:12px;border-radius:999px;padding:6px 12px;white-space:nowrap;margin-bottom:3px}
+      .voucher-ref,.date-ref{font-size:13px;line-height:1.35;color:#475569;white-space:nowrap}
+      .voucher-ref strong{color:#0f172a;font-weight:900}
       .title{font-size:22px;font-weight:700;text-align:center;margin:24px 0 14px}
       .table{width:100%;border-collapse:collapse}.table th,.table td{border:1px solid #ddd;padding:10px}.table th{background:#f6f1df;text-align:left;width:35%}
       .amount{font-size:24px;font-weight:700;text-align:right;margin-top:18px}.sign{display:flex;justify-content:space-between;margin-top:85px}.sign div{width:30%;text-align:center;border-top:1px solid #777;padding-top:6px;font-size:12px}
-      @media(max-width:650px){.head{gap:12px}.logo{width:70px;height:70px}.brand h1{font-size:21px}.contact{font-size:12px}}
-    </style></head><body><div class="wrap"><div class="head">${logo?`<img class="logo" src="${logo}" alt="Logo">`:''}<div class="brand"><h1>${esc(s.institutionName)}</h1><p>${esc(s.subtitle)}</p><div class="contact">${contact}</div></div></div><div class="title">অন্যান্য ব্যয়ের ভাউচার / EXPENSE INVOICE</div><div class="meta"><div class="box"><b>ভাউচার নং:</b> ${esc(e.expenseNo)}</div><div class="box"><b>তারিখ:</b> ${esc(e.date)}</div></div><table class="table" style="margin-top:16px"><tr><th>খরচের শিরোনাম</th><td>${esc(e.title)}</td></tr><tr><th>খরচের ধরন</th><td>${esc(e.category)}</td></tr><tr><th>যাকে/যেখানে প্রদান</th><td>${esc(e.payee||'—')}</td></tr><tr><th>পেমেন্ট মাধ্যম</th><td>${esc(e.method||'—')}</td></tr><tr><th>রেফারেন্স/বিল নং</th><td>${esc(e.reference||'—')}</td></tr><tr><th>বিস্তারিত</th><td>${esc(e.note||'—')}</td></tr></table><div class="amount">মোট খরচ: ${money(e.amount)}</div><div class="sign"><div>প্রদানকারী / গ্রহণকারী</div><div>হিসাব রক্ষক</div><div>পরিচালক / কর্তৃপক্ষ</div></div></div><script>window.onload=()=>setTimeout(()=>window.print(),250);</script></body></html>`;
+      @media(max-width:650px){.head{gap:12px;flex-wrap:wrap}.logo{width:70px;height:70px}.brand{flex:1 1 calc(100% - 82px)}.brand h1{font-size:21px}.contact{font-size:12px}.meta{width:100%;flex:1 1 100%;align-items:flex-end;padding-top:0}.authority-pill{font-size:11px}.voucher-ref,.date-ref{font-size:12px}}
+    </style></head><body><div class="wrap"><div class="head">${logo?`<img class="logo" src="${logo}" alt="Logo">`:''}<div class="brand"><h1>${esc(s.institutionName)}</h1><p>${esc(s.subtitle)}</p><div class="contact">${contact}</div></div><div class="meta"><div class="authority-pill">অফিসিয়াল কর্তৃপক্ষ</div><div class="voucher-ref">ভাউচার নং: <strong>#${esc(e.expenseNo)}</strong></div><div class="date-ref">তারিখ: ${esc(e.date)}</div></div></div><div class="title">অন্যান্য ব্যয়ের ভাউচার / EXPENSE INVOICE</div><table class="table" style="margin-top:16px"><tr><th>খরচের শিরোনাম</th><td>${esc(e.title)}</td></tr><tr><th>খরচের ধরন</th><td>${esc(e.category)}</td></tr><tr><th>যাকে/যেখানে প্রদান</th><td>${esc(e.payee||'—')}</td></tr><tr><th>পেমেন্ট মাধ্যম</th><td>${esc(e.method||'—')}</td></tr><tr><th>রেফারেন্স/বিল নং</th><td>${esc(e.reference||'—')}</td></tr><tr><th>বিস্তারিত</th><td>${esc(e.note||'—')}</td></tr></table><div class="amount">মোট খরচ: ${money(e.amount)}</div><div class="sign"><div>প্রদানকারী / গ্রহণকারী</div><div>হিসাব রক্ষক</div><div>পরিচালক / কর্তৃপক্ষ</div></div></div><script>window.onload=()=>setTimeout(()=>window.print(),250);</script></body></html>`;
     const w=window.open('','_blank','width=900,height=1000');
     if(!w){alert('পপ-আপ ব্লক হয়েছে। ব্রাউজারে pop-up অনুমতি দিন।');return;}
     w.document.open();w.document.write(html);w.document.close();
