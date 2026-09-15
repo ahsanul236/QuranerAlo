@@ -7,7 +7,7 @@
   function nav(){return $('header .max-w-7xl.mx-auto.flex.gap-2.text-sm');}
   function newTab(id,label,ico,click){
     const b=document.createElement('button'); b.id=id;
-    b.className='tab-btn py-2.5 px-3 font-medium flex items-center justify-center gap-2 rounded-xl transition';
+    b.className='tab-btn py-2.5 px-3 font-medium flex items-center justify-center gap-2 rounded-xl transition text-slate-700 whitespace-nowrap';
     b.innerHTML='<i class="'+ico+'"></i><span>'+label+'</span>'; b.onclick=click; return b;
   }
 
@@ -17,7 +17,6 @@
     const wasVisible=!old.classList.contains('hidden');
     const sec=document.createElement('section'); sec.id='view-'+name; sec.className=old.className+' ka-new-section';
     sec.innerHTML='<div class="ka-section-head"><div><h2>'+title+'</h2><p>'+subtitle+'</p></div></div>';
-    const head=sec.firstElementChild; void head;
     while(old.firstChild)sec.appendChild(old.firstChild);
     if(!wasVisible)sec.classList.add('hidden');
     sec.dataset.kaRebuilt='1'; old.replaceWith(sec);
@@ -50,14 +49,13 @@
 
   function reportTab(){
     const n=nav(); if(!n||document.getElementById('tab-pro-reports'))return;
-    const old=document.getElementById('tab-monthly-sheet'); old?.remove();
     const staff=document.getElementById('tab-staffs'); if(!staff)return;
     const b=newTab('tab-pro-reports','রিপোর্ট ও অ্যানালিটিক্স','fa-solid fa-chart-line text-indigo-500',showMerged);
     staff.after(b);
   }
 
   function showMerged(){
-    ['dashboard','students','payments','staffs','invoice','sheets-guide'].forEach(t=>{
+    ['dashboard','students','payments','staffs','invoice','settings','sheets-guide'].forEach(t=>{
       document.getElementById('view-'+t)?.classList.add('hidden');
       document.getElementById('tab-'+t)?.classList.remove('active');
     });
@@ -67,7 +65,33 @@
     const p=document.getElementById('ka-pro-view'); if(p)p.classList.remove('hidden');
     document.getElementById('tab-pro-reports')?.classList.add('active');
     const m=document.getElementById('ka-pro-report-month'); if(m)m.dispatchEvent(new Event('change',{bubbles:true}));
+    const oldMonth=document.getElementById('monthly-month'); if(oldMonth) oldMonth.dispatchEvent(new Event('change',{bubbles:true}));
     window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function patchSwitchTab(){
+    if(window.__kaStructureSwitchPatched||typeof window.switchTab!=='function')return;
+    const original=window.switchTab;
+    window.switchTab=function(tab){
+      if(tab==='monthly-sheet')return showMerged();
+      const needStubs=['monthly-sheet','sheets-guide'];
+      const made=[];
+      needStubs.forEach(t=>{
+        if(!document.getElementById('view-'+t)){
+          const v=document.createElement('section'); v.id='view-'+t; v.className='hidden'; v.style.display='none'; document.querySelector('main')?.appendChild(v); made.push(v);
+        }
+        if(!document.getElementById('tab-'+t)){
+          const b=document.createElement('button'); b.id='tab-'+t; b.className='hidden'; b.style.display='none'; document.querySelector('header .max-w-7xl.mx-auto.flex.gap-2.text-sm')?.appendChild(b); made.push(b);
+        }
+      });
+      try{original(tab);}finally{made.forEach(x=>x.remove());}
+      if(tab==='invoice'){
+        document.getElementById('view-report-merged')?.classList.add('hidden');
+        document.getElementById('ka-pro-view')?.classList.add('hidden');
+        document.getElementById('tab-pro-reports')?.classList.remove('active');
+      }
+    };
+    window.__kaStructureSwitchPatched=true;
   }
 
   function hideSheets(){
@@ -81,6 +105,7 @@
       .ka-new-section{width:100%}.ka-section-head{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:18px;margin-bottom:10px;box-shadow:0 6px 20px rgba(15,23,42,.05)}
       .ka-section-head h2{margin:0;color:#0f172a;font-size:22px;font-weight:800}.ka-section-head p{margin:5px 0 0;color:#64748b;font-size:12px}
       #view-report-merged{width:100%}#view-report-merged #ka-pro-view{width:100%}#view-report-merged #ka-pro-view.hidden{display:block!important}
+      #view-report-merged #ka-pro-view>*{max-width:none}
       header .tab-btn{min-height:44px}
       @media(max-width:640px){.ka-section-head{padding:14px}.ka-section-head h2{font-size:19px}}
     `;document.head.appendChild(s);
@@ -95,6 +120,7 @@
     rebuildSection('staffs','শিক্ষক ও স্টাফ স্যালারি','শিক্ষক/স্টাফ তথ্য, বেতন প্রদান, বেতন ইতিহাস ও ভাউচার');
     rebuildCoreTabs();
     if(!mergeReports())return;
+    patchSwitchTab();
     reportTab();
     hideSheets();
     done=true;
