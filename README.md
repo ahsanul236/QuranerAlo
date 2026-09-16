@@ -2,6 +2,9 @@
 
 ## কোরআনের আলো — Online Quran Academy Management System
 
+Repository: https://github.com/ahsanul236/QuranerAloSchool
+Live website: https://ahsanul236.github.io/QuranerAloSchool/
+
 This repository is a clean rebuild from the ground up.
 
 ### Principles
