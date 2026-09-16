@@ -1,0 +1,23 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const config=window.QURANER_ALO_CONFIG;
+const supabase=createClient(config.supabaseUrl,config.supabasePublishableKey,{auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+let role='viewer';let students=[];let existing={};
+const today=new Date().toISOString().slice(0,10);$('attendanceDate').value=today;
+function esc(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));}
+function setFilterMsg(t,type=''){ $('filterMessage').textContent=t; $('filterMessage').className=`message-inline ${type}`.trim(); }
+function setSaveMsg(t,type=''){ $('saveMessage').textContent=t; $('saveMessage').className=`message-inline ${type}`.trim(); }
+async function init(){const {data:{session}}=await supabase.auth.getSession();if(!session){location.replace('./');return;}
+const {data:profile,error}=await supabase.from('qa_users').select('role,active').eq('user_id',session.user.id).maybeSingle();if(error||!profile||!profile.active){await supabase.auth.signOut();location.replace('./');return;}role=profile.role;
+const [tr,st]=await Promise.all([supabase.from('qa_teachers').select('teacher_id,full_name,teacher_code').eq('active',true).order('full_name'),supabase.from('qa_students').select('student_id,student_code,full_name,phone').eq('status','active').order('full_name')]);
+if(tr.error||st.error){setFilterMsg('Required records load করা যায়নি।','error');return;}
+$('teacherSelect').innerHTML='<option value="">— নির্ধারিত নয় —</option>'+tr.data.map(t=>`<option value="${esc(t.teacher_id)}">${esc(t.teacher_code)} · ${esc(t.full_name)}</option>`).join('');students=st.data;
+$('loading').classList.add('hidden');$('app').classList.remove('hidden');await loadAttendance();}
+async function loadAttendance(){const date=$('attendanceDate').value;if(!date)return;setFilterMsg('Attendance data load হচ্ছে…');const {data,error}=await supabase.from('qa_attendance').select('attendance_id,student_id,teacher_id,status,remarks,attendance_date').eq('attendance_date',date);if(error){setFilterMsg('Attendance data load করা যায়নি।','error');return;}existing=Object.fromEntries((data||[]).map(r=>[r.student_id,r]));renderRows();setFilterMsg(`${students.length} জন শিক্ষার্থী প্রস্তুত।`);}
+function renderRows(){const canManage=['owner','admin','teacher','helper'].includes(role);$('attendanceRows').innerHTML=students.map(s=>{const r=existing[s.student_id]||{};return `<tr data-id="${esc(s.student_id)}"><td><strong>${esc(s.student_code)}</strong></td><td>${esc(s.full_name)}</td><td>${esc(s.phone)}</td><td><select data-status ${canManage?'':'disabled'}><option value="present" ${(r.status||'present')==='present'?'selected':''}>Present</option><option value="absent" ${r.status==='absent'?'selected':''}>Absent</option><option value="late" ${r.status==='late'?'selected':''}>Late</option><option value="excused" ${r.status==='excused'?'selected':''}>Excused</option><option value="leave" ${r.status==='leave'?'selected':''}>Leave</option><option value="class_cancelled" ${r.status==='class_cancelled'?'selected':''}>Class Cancelled</option></select></td><td><input data-remarks value="${esc(r.remarks||'')}" ${canManage?'':'disabled'}></td></tr>`;}).join('');$('studentCount').textContent=`${students.length} students`;$('saveAttendance').classList.toggle('hidden',!canManage);}
+$('filterForm').addEventListener('submit',async e=>{e.preventDefault();await loadAttendance();});
+$('saveAttendance').addEventListener('click',async()=>{const date=$('attendanceDate').value;const teacherId=$('teacherSelect').value||null;const rows=[...document.querySelectorAll('#attendanceRows tr')];$('saveAttendance').disabled=true;setSaveMsg('Saving attendance…');
+let saved=0;for(const row of rows){const studentId=row.dataset.id;const status=row.querySelector('[data-status]').value;const remarks=row.querySelector('[data-remarks]').value.trim();const old=existing[studentId];let result;if(old){result=await supabase.from('qa_attendance').update({teacher_id:teacherId,status,remarks,updated_at:new Date().toISOString()}).eq('attendance_id',old.attendance_id);}else{result=await supabase.from('qa_attendance').insert({student_id:studentId,teacher_id:teacherId,attendance_date:date,status,remarks});}if(!result.error){saved++;if(old)existing[studentId]={...old,teacher_id:teacherId,status,remarks};}}
+$('saveAttendance').disabled=false;setSaveMsg(`${saved}টি attendance record save হয়েছে।`,'success');await loadAttendance();});
+$('signOut').addEventListener('click',async()=>{await supabase.auth.signOut();location.replace('./');});
+await init();
