@@ -2,11 +2,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const config = window.QURANER_ALO_CONFIG;
 const supabase = createClient(config.supabaseUrl, config.supabasePublishableKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  }
+  auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
 });
 
 const $ = (id) => document.getElementById(id);
@@ -20,11 +16,7 @@ const authPanel = $('authPanel');
 const signedInPanel = $('signedInPanel');
 const message = $('message');
 
-function setMessage(text, type = '') {
-  message.textContent = text;
-  message.className = `message ${type}`.trim();
-}
-
+function setMessage(text, type = '') { message.textContent = text; message.className = `message ${type}`.trim(); }
 function showTab(tab) {
   const login = tab === 'login';
   loginForm.classList.toggle('hidden', !login);
@@ -33,28 +25,20 @@ function showTab(tab) {
   setupTab.classList.toggle('is-active', !login);
   loginTab.setAttribute('aria-selected', String(login));
   setupTab.setAttribute('aria-selected', String(!login));
-  if (login) setupForm.reset();
-  else loginForm.reset();
+  if (login) setupForm.reset(); else loginForm.reset();
   setMessage('');
 }
-
 function showSignedIn(user, role) {
   authPanel.classList.add('hidden');
   signedInPanel.classList.remove('hidden');
   $('signedInEmail').textContent = user.email || '';
   $('signedInRole').textContent = role ? role.toUpperCase() : 'AUTHENTICATED';
 }
-
 async function getProfile(user) {
-  const { data, error } = await supabase
-    .from('qa_users')
-    .select('email, full_name, role, active')
-    .eq('user_id', user.id)
-    .maybeSingle();
+  const { data, error } = await supabase.from('qa_users').select('email, full_name, role, active').eq('user_id', user.id).maybeSingle();
   if (error) throw error;
   return data;
 }
-
 async function renderSession(session) {
   if (!session?.user) return;
   try {
@@ -64,7 +48,7 @@ async function renderSession(session) {
       setMessage('এই account বর্তমানে inactive করা আছে।', 'error');
       return;
     }
-    showSignedIn(session.user, profile?.role || 'viewer');
+    window.location.replace('dashboard.html');
   } catch (error) {
     console.error(error);
     setMessage('Profile load করা যায়নি।', 'error');
@@ -80,27 +64,17 @@ loginForm.addEventListener('submit', async (event) => {
   const email = $('loginEmail').value.trim();
   const password = $('loginPassword').value;
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    setMessage('Login করা যায়নি। Email/password যাচাই করুন অথবা password reset করুন।', 'error');
-    return;
-  }
+  if (error) { setMessage('Login করা যায়নি। Email/password যাচাই করুন অথবা password reset করুন।', 'error'); return; }
   if (data.session) await renderSession(data.session);
 });
 
 $('forgotPassword').addEventListener('click', async () => {
   const email = $('loginEmail').value.trim();
-  if (!email) {
-    setMessage('প্রথমে আপনার email লিখুন, তারপর password reset চাপুন।', 'error');
-    $('loginEmail').focus();
-    return;
-  }
+  if (!email) { setMessage('প্রথমে আপনার email লিখুন, তারপর password reset চাপুন।', 'error'); $('loginEmail').focus(); return; }
   setMessage('Password reset email পাঠানো হচ্ছে…');
   const redirectTo = `${window.location.origin}${window.location.pathname}`;
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
-  if (error) {
-    setMessage('Password reset request পাঠানো যায়নি।', 'error');
-    return;
-  }
+  if (error) { setMessage('Password reset request পাঠানো যায়নি।', 'error'); return; }
   setMessage('যদি এই email-এর account থাকে, password reset email পাঠানো হয়েছে।', 'success');
 });
 
@@ -110,32 +84,13 @@ setupForm.addEventListener('submit', async (event) => {
   const fullName = $('setupName').value.trim();
   const password = $('setupPassword').value;
   const password2 = $('setupPassword2').value;
-  if (email !== 'ahsanul236@outlook.com') {
-    setMessage('এই Super Admin setup শুধু নির্ধারিত owner email-এর জন্য।', 'error');
-    return;
-  }
-  if (password !== password2) {
-    setMessage('দুইটি password একই নয়।', 'error');
-    return;
-  }
+  if (email !== 'ahsanul236@outlook.com') { setMessage('এই Super Admin setup শুধু নির্ধারিত owner email-এর জন্য।', 'error'); return; }
+  if (password !== password2) { setMessage('দুইটি password একই নয়।', 'error'); return; }
   setMessage('Super Admin account তৈরি হচ্ছে…');
   const redirectTo = `${window.location.origin}${window.location.pathname}`;
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: { full_name: fullName },
-      emailRedirectTo: redirectTo
-    }
-  });
-  if (error) {
-    setMessage('Account তৈরি করা যায়নি। Email confirmation বা existing account-এর অবস্থা যাচাই করুন।', 'error');
-    return;
-  }
-  if (data.session) {
-    await renderSession(data.session);
-    return;
-  }
+  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName }, emailRedirectTo: redirectTo } });
+  if (error) { setMessage('Account তৈরি করা যায়নি। Email confirmation বা existing account-এর অবস্থা যাচাই করুন।', 'error'); return; }
+  if (data.session) { await renderSession(data.session); return; }
   setMessage('Account তৈরি হয়েছে। আপনার email inbox থেকে confirmation link খুলে তারপর login করুন।', 'success');
 });
 
@@ -143,15 +98,9 @@ recoveryForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const password = $('recoveryPassword').value;
   const password2 = $('recoveryPassword2').value;
-  if (password !== password2) {
-    setMessage('দুইটি নতুন password একই নয়।', 'error');
-    return;
-  }
+  if (password !== password2) { setMessage('দুইটি নতুন password একই নয়।', 'error'); return; }
   const { error } = await supabase.auth.updateUser({ password });
-  if (error) {
-    setMessage('Password update করা যায়নি।', 'error');
-    return;
-  }
+  if (error) { setMessage('Password update করা যায়নি।', 'error'); return; }
   recoveryBox.classList.add('hidden');
   setMessage('Password সফলভাবে পরিবর্তন হয়েছে।', 'success');
 });
@@ -176,6 +125,4 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 });
 
 const { data: initialSession } = await supabase.auth.getSession();
-if (initialSession.session) {
-  await renderSession(initialSession.session);
-}
+if (initialSession.session) await renderSession(initialSession.session);
