@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b2342">
+  <meta name="description" content="QURANER ALO management dashboard">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://xjysbpthosvjxzujmuhe.supabase.co;">
+  <title>Management Dashboard | QURANER ALO</title>
+  <link rel="icon" type="image/jpeg" href="assets/quraner-alo-logo.jpg">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <main class="dashboard-shell">
+    <section class="card dashboard-card">
+      <div class="topbar">
+        <div class="brand-mini">
+          <img src="assets/quraner-alo-logo.jpg" width="58" height="58" alt="QURANER ALO logo">
+          <div><strong>কোরআনের আলো</strong><span>QURANER ALO School Management</span></div>
+        </div>
+        <div class="top-actions"><span id="rolePill" class="role-pill">AUTHENTICATED</span><button id="signOut" class="secondary-btn" type="button">Sign out</button></div>
+      </div>
+
+      <div id="loading" class="notice-box">Dashboard load হচ্ছে…</div>
+      <div id="app" class="hidden">
+        <div class="dashboard-grid">
+          <div class="stat"><div class="kicker">Students</div><strong>0</strong></div>
+          <div class="stat"><div class="kicker">Teachers</div><strong>0</strong></div>
+          <div class="stat"><div class="kicker">Attendance</div><strong>—</strong></div>
+          <div class="stat"><div class="kicker">Fees Due</div><strong>৳ 0</strong></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Management Modules</h2><span id="userEmail" class="eyebrow"></span></div>
+          <div class="module-grid" style="padding:16px">
+            <article class="module"><h3>Students</h3><p>Student profile, guardian, enrollment, Quran progress এবং complete timeline.</p></article>
+            <article class="module"><h3>Teachers & Helpers</h3><p>Staff profile, roles, attendance, workload এবং payroll preparation.</p></article>
+            <article class="module"><h3>Classes & Attendance</h3><p>Class schedule, online session, attendance, lesson এবং homework tracking.</p></article>
+            <article class="module"><h3>Quran Progress</h3><p>Qaida, Nazera, Hifz, Tajweed, Sabaq, Sabqi, Manzil এবং progress reports.</p></article>
+            <article class="module"><h3>Fees & Accounts</h3><p>Fee ledger, receipts, income, expense, vouchers এবং cash/bank records.</p></article>
+            <article class="module"><h3>Payroll & Reports</h3><p>Salary processing, salary slips, management reports এবং print-ready documents.</p></article>
+          </div>
+        </div>
+
+        <div id="userManagement" class="panel hidden">
+          <div class="panel-head"><h2>User & Role Management</h2><span class="eyebrow">USERS.MANAGE</span></div>
+          <div class="table-wrap"><table class="user-table"><thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody id="userRows"></tbody></table></div>
+        </div>
+
+        <p class="footer-note">Security-first architecture · RLS enforced · passwords are never displayed or stored here.</p>
+      </div>
+    </section>
+  </main>
+  <script src="supabase-config.js"></script>
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>
