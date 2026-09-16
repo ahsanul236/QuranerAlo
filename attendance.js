@@ -3,12 +3,12 @@ import { getAccess } from './authz.js';
 const config=window.QURANER_ALO_CONFIG;
 const supabase=createClient(config.supabaseUrl,config.supabasePublishableKey,{auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}});
 const $=id=>document.getElementById(id);
-let role='viewer';let students=[];let existing={};let access=null;let canManage=false;
+let students=[];let existing={};let access=null;let canManage=false;
 const today=new Date().toISOString().slice(0,10);$('attendanceDate').value=today;
 function esc(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));}
 function setFilterMsg(t,type=''){ $('filterMessage').textContent=t; $('filterMessage').className=`message-inline ${type}`.trim(); }
 function setSaveMsg(t,type=''){ $('saveMessage').textContent=t; $('saveMessage').className=`message-inline ${type}`.trim(); }
-async function init(){const a=await getAccess(supabase);if(!a){await supabase.auth.signOut();location.replace('./');return;}access=a;role=a.profile.role;canManage=a.can('attendance.manage')||['teacher','helper'].includes(role);if(!a.can('attendance.view')&&!canManage){$('loading').textContent='Attendance module-এর permission আপনার account-এ নেই।';return;}
+async function init(){const a=await getAccess(supabase);if(!a){await supabase.auth.signOut();location.replace('./');return;}access=a;canManage=a.can('attendance.manage');if(!a.can('attendance.view')&&!canManage){$('loading').textContent='Attendance module-এর permission আপনার account-এ নেই।';return;}
 const [tr,st]=await Promise.all([supabase.from('qa_teachers').select('teacher_id,full_name,teacher_code').eq('active',true).order('full_name'),supabase.from('qa_students').select('student_id,student_code,full_name,phone').eq('status','active').order('full_name')]);
 if(tr.error||st.error){setFilterMsg('Required records load করা যায়নি।','error');return;}
 $('teacherSelect').innerHTML='<option value="">— নির্ধারিত নয় —</option>'+tr.data.map(t=>`<option value="${esc(t.teacher_id)}">${esc(t.teacher_code)} · ${esc(t.full_name)}</option>`).join('');students=st.data;
