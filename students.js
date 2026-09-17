@@ -202,7 +202,6 @@ $('studentForm').addEventListener('submit', async (event) => {
     const { data, error } = await supabase.rpc('qa_create_student_with_guardian', {
       p_student: {
         full_name: String(form.get('full_name') || '').trim(),
-        full_name_bn: String(form.get('full_name_bn') || '').trim(),
         gender: String(form.get('gender') || 'unspecified'),
         date_of_birth: form.get('date_of_birth') || '',
         phone: String(form.get('phone') || '').trim(),
