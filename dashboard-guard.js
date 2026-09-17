@@ -13,14 +13,14 @@
       button.textContent = 'Signing out…';
       try { await client.auth.signOut(); } catch (error) { console.error('Dashboard sign-out failed', error); }
       finally { login(); }
-    }, { once: false });
+    });
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind, { once: true });
   else bind();
   window.setTimeout(() => {
     const loading = $('loading');
     const app = $('app');
-    if (loading && app && !app.classList.contains('hidden') === false && loading.textContent.includes('Dashboard load')) {
+    if (loading && app && app.classList.contains('hidden') && loading.textContent.includes('Dashboard load')) {
       loading.innerHTML = 'Dashboard initialize হতে সময় লাগছে। <a href="./">Login page-এ ফিরুন</a> এবং আবার চেষ্টা করুন।';
       loading.classList.add('error');
     }
