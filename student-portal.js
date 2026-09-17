@@ -1,7 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const c=window.QURANER_ALO_CONFIG;const supabase=createClient(c.supabaseUrl,c.supabasePublishableKey,{auth:{autoRefreshToken:true,persistSession:true}});const $=id=>document.getElementById(id);const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
 function statusClass(value){const v=String(value||'').toLowerCase();if(['active','present','paid','scheduled','completed'].includes(v))return 'on';if(['absent','inactive','overdue','cancelled'].includes(v))return 'off';return '';}
-function money(value){return `৳${Number(value||0).toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2})`;}
+function money(value){return `৳${Number(value||0).toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2})}`;}
 function formatDate(value){return value?new Date(`${value}T00:00:00`).toLocaleDateString('en-GB'):'—';}
 function formatDateTime(value){return value?new Date(value).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'}):'—';}
 function safeLink(url,label='Join class'){if(!url)return '';try{const u=new URL(url);if(!['http:','https:'].includes(u.protocol))return '';return `<a class="quick-link" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`;}catch{return '';}}
