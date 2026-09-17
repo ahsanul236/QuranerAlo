@@ -51,7 +51,7 @@
   }
 
   async function buildAccess(session, profile) {
-    if (['owner', 'admin'].includes(profile.role)) {
+    if (profile.role === 'owner') {
       return { session, profile, permissions: new Set(), can: () => true };
     }
     const [u, r] = await Promise.all([
