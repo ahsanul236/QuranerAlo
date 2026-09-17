@@ -3,16 +3,8 @@ export async function getAccess(supabase){
   if(!session) return null;
   const {data:profile,error:profileError}=await supabase.from('qa_users').select('user_id,email,full_name,role,active').eq('user_id',session.user.id).maybeSingle();
   if(profileError||!profile||!profile.active) return null;
-  const elevated=['owner','admin'].includes(profile.role);
-  // Owner/admin access is already defined by the database authorization layer.
-  // Do not make dashboard rendering depend on optional permission rows for elevated users.
-  if(elevated){
-    return {
-      session,
-      profile,
-      permissions:new Set(),
-      can(){ return true; }
-    };
+  if(profile.role==='owner'){
+    return {session,profile,permissions:new Set(),can(){ return true; }};
   }
   const [{data:userRows,error:userError},{data:roleRows,error:roleError}]=await Promise.all([
     supabase.from('qa_user_permissions').select('permission_code').eq('user_id',session.user.id).eq('allowed',true),
