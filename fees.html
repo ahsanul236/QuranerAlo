@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b2342">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://xjysbpthosvjxzujmuhe.supabase.co;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://xjysbpthosvjxzujmuhe.supabase.co;">
 <title>Fees & Receipts | QURANER ALO</title><link rel="icon" type="image/jpeg" href="assets/quraner-alo-logo.jpg"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="dashboard.css">
 </head>
 <body><main class="dashboard-shell"><section class="card dashboard-card">
@@ -20,6 +20,6 @@
 <label>Reference<input id="paymentReference" type="text" placeholder="Transaction / bank reference"></label><label>Notes<input id="paymentNotes" type="text" placeholder="Optional note"></label>
 <div class="span-2 page-actions"><button class="primary-btn" style="width:auto" type="submit">Save Payment & Generate Receipt No.</button></div></form><div id="paymentMessage" class="message-inline"></div></div>
 <div class="panel"><div class="panel-head"><h2>Fee Ledger</h2><span id="chargeCount" class="eyebrow">0 records</span></div><div class="table-wrap"><table class="user-table attendance-table"><thead><tr><th>Month</th><th>Student</th><th>Payable</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Payments</th></tr></thead><tbody id="feeRows"></tbody></table></div></div>
-<div class="panel"><div class="panel-head"><h2>Recent Receipts</h2><span id="receiptCount" class="eyebrow">0 receipts</span></div><div class="table-wrap"><table class="user-table attendance-table"><thead><tr><th>Receipt No.</th><th>Date</th><th>Student</th><th>Amount</th><th>Method</th><th>Reference</th></tr></thead><tbody id="receiptRows"></tbody></table></div></div>
+<div class="panel"><div class="panel-head"><h2>Recent Receipts</h2><span id="receiptCount" class="eyebrow">0 receipts</span></div><div class="table-wrap"><table class="user-table attendance-table"><thead><tr><th>Receipt No.</th><th>Date</th><th>Student</th><th>Amount</th><th>Method</th><th>Reference</th><th>Print</th></tr></thead><tbody id="receiptRows"></tbody></table></div></div>
 <p class="footer-note">RLS enforced · Receipt numbers are generated server-side · Payments are never stored in browser local storage.</p>
 </div></section></main><script src="supabase-config.js"></script><script type="module" src="fees.js"></script></body></html>
