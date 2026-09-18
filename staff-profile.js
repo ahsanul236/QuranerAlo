@@ -4,7 +4,7 @@ const qs=new URLSearchParams(location.search),type=qs.get('type')==='teacher'?'t
 const msg=(t,k='')=>{$('message').textContent=t;$('message').className=`message-inline ${k}`.trim()};
 const canView=()=>access?.can(type==='teacher'?'teachers.view':'staff.view');
 const canManage=()=>access?.can(type==='teacher'?'teachers.manage':'staff.manage');
-function setInputs(on){['fullName','fullNameBn','phone','email','specialization','joiningDate','active','notes'].forEach(x=>{if($(x))$(x).disabled=!on})}
+function setInputs(on){['fullName','fullNameBn','phone','email','specialization','joiningDate','active','notes','fatherName','motherName','nidNumber','address'].forEach(x=>{if($(x))$(x).disabled=!on})}
 function updateContext(){
   const teacher=type==='teacher';
   $('topBack').href=`staff.html#${teacher?'teachers':'helpers'}`;
@@ -23,6 +23,10 @@ function fill(){
   $('phone').value=row.phone||'';
   $('email').value=row.email||'';
   $('specialization').value=teacher?row.specialization||'':'';
+  $('fatherName').value=row.father_name||'';
+  $('motherName').value=row.mother_name||'';
+  $('nidNumber').value=row.nid_number||'';
+  $('address').value=row.address||'';
   $('joiningDate').value=row.joining_date||'';
   $('active').value=String(row.active!==false);
   $('notes').value=row.notes||'';
@@ -57,7 +61,7 @@ $('form').onsubmit=async e=>{
   e.preventDefault();
   if(!canManage())return msg(`${type==='teacher'?'Teacher':'Helper'} edit permission নেই।`,'error');
   $('saveBtn').disabled=true;msg('Saving…');
-  const payload={full_name:$('fullName').value.trim(),phone:$('phone').value.trim(),email:$('email').value.trim(),joining_date:$('joiningDate').value||null,active:$('active').value==='true',notes:$('notes').value.trim()};
+  const payload={full_name:$('fullName').value.trim(),phone:$('phone').value.trim(),email:$('email').value.trim(),father_name:$('fatherName').value.trim(),mother_name:$('motherName').value.trim(),nid_number:$('nidNumber').value.trim(),address:$('address').value.trim(),joining_date:$('joiningDate').value||null,active:$('active').value==='true',notes:$('notes').value.trim()};
   if(type==='teacher'){payload.full_name_bn=$('fullNameBn').value.trim();payload.specialization=$('specialization').value.trim()||null}
   try{
     const{error}=await supabase.from(type==='teacher'?'qa_teachers':'qa_staff').update(payload).eq(type==='teacher'?'teacher_id':'staff_id',id);
