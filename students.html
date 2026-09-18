@@ -31,6 +31,8 @@
 .student-table th,.student-table td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle}
 .student-table th{color:var(--muted);font-size:13px}
 .student-code{font-weight:700;color:var(--navy)}
+.student-id-link{color:var(--navy2);text-decoration:none;border-bottom:1px dashed var(--navy2)}
+.student-id-link:hover{color:#2d7be7;border-bottom-color:#2d7be7}
 .hidden{display:none!important}
 @media(max-width:640px){.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}.form-subsection{grid-column:auto}.page-head h1{font-size:27px}}
 </style>
@@ -53,13 +55,11 @@
 <div class="panel-head"><h2>নতুন শিক্ষার্থী ও Guardian তথ্য</h2></div>
 <form id="studentForm" class="form-grid" style="padding:16px">
 <label>পূর্ণ নাম<input name="full_name" required></label>
-<label>লিঙ্গ<select name="gender"><option value="unspecified">নির্ধারিত নয়</option><option value="male">পুরুষ</option><option value="female">নারী</option><option value="other">অন্যান্য</option></select></label>
+<label>লিঙ্গ<select name="gender"><option value="unspecified">নির্ধারিত নয়</option><option value="male">পুরুষ</option><option value="female">নারী</option></select></label>
 <label>জন্মতারিখ<input name="date_of_birth" type="date"></label>
-<label>ফোন<input name="phone" inputmode="tel"></label>
 <label>Email<input name="email" type="email"></label>
 <label>ভর্তি তারিখ<input name="admission_date" type="date"></label>
-<label>অবস্থা<select name="status"><option value="active">Active</option><option value="on_hold">On hold</option><option value="inactive">Inactive</option></select></label>
-<label class="full">ঠিকানা<textarea name="address" rows="2"></textarea></label>
+<label>অবস্থা<select name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
 <label class="full">নোট<textarea name="notes" rows="2"></textarea></label>
 
 <div class="form-subsection">
@@ -94,8 +94,8 @@
 
 <div class="panel">
 <div class="panel-head"><h2>শিক্ষার্থী তালিকা</h2><span id="countLabel" class="eyebrow"></span></div>
-<div class="toolbar" style="padding:0 16px"><input id="search" placeholder="নাম / Student ID / ফোন দিয়ে খুঁজুন…"></div>
-<div class="table-wrap"><table class="student-table"><thead><tr><th>Student ID</th><th>নাম</th><th>ফোন</th><th>ভর্তি</th><th>অবস্থা</th><th>Portal</th><th>Portal Access</th></tr></thead><tbody id="studentRows"></tbody></table></div>
+<div class="toolbar" style="padding:0 16px"><input id="search" placeholder="নাম / Student ID / Email দিয়ে খুঁজুন…"></div>
+<div class="table-wrap"><table class="student-table"><thead><tr><th>Student ID</th><th>নাম</th><th>ভর্তি</th><th>অবস্থা</th><th>Portal</th><th>Portal Access</th></tr></thead><tbody id="studentRows"></tbody></table></div>
 </div>
 <p id="message" class="footer-note" aria-live="polite"></p>
 </div>
