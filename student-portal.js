@@ -126,8 +126,6 @@ async function init() {
   const [
     enrollmentResult,
     guardianLinkResult,
-    attendanceResult,
-    quranResult,
     feeChargeResult,
     feePaymentResult
   ] = await Promise.all([
@@ -140,18 +138,6 @@ async function init() {
       .from('qa_student_guardians')
       .select('guardian_id,is_primary')
       .eq('student_id', student.student_id),
-    supabase
-      .from('qa_attendance')
-      .select('attendance_date,status,remarks')
-      .eq('student_id', student.student_id)
-      .order('attendance_date', { ascending: false })
-      .limit(12),
-    supabase
-      .from('qa_quran_progress')
-      .select('lesson_date,track,surah_name,juz_number,ayah_from,ayah_to,page_number,sabaq,sabqi,manzil,completion_percent,teacher_note,next_target,teacher_id')
-      .eq('student_id', student.student_id)
-      .order('lesson_date', { ascending: false })
-      .limit(12),
     supabase
       .from('qa_fee_charges')
       .select('billing_month,expected_amount,discount,previous_due,current_payable,due_date,status')
@@ -169,8 +155,6 @@ async function init() {
   for (const result of [
     enrollmentResult,
     guardianLinkResult,
-    attendanceResult,
-    quranResult,
     feeChargeResult,
     feePaymentResult
   ]) {
@@ -179,8 +163,6 @@ async function init() {
 
   const enrollments = enrollmentResult.data || [];
   const guardianLinks = guardianLinkResult.data || [];
-  const attendance = attendanceResult.data || [];
-  const quranProgress = quranResult.data || [];
   const charges = feeChargeResult.data || [];
   const payments = feePaymentResult.data || [];
 
@@ -291,42 +273,6 @@ async function init() {
     `;
   }).join('') || '<tr><td colspan="6">No upcoming class scheduled.</td></tr>';
 
-  $('presentCount').textContent = String(attendance.filter((x) => x.status === 'present').length);
-  $('absentCount').textContent = String(attendance.filter((x) => x.status === 'absent').length);
-  $('otherAttendanceCount').textContent =
-    String(attendance.filter((x) => !['present', 'absent'].includes(x.status)).length);
-
-  $('attendanceRows').innerHTML = attendance.map((item) => `
-    <tr>
-      <td>${esc(formatDate(item.attendance_date))}</td>
-      <td><span class="active-badge ${statusClass(item.status)}">${esc(item.status)}</span></td>
-      <td>${esc(item.remarks || '')}</td>
-    </tr>
-  `).join('') || '<tr><td colspan="3">No attendance record.</td></tr>';
-
-  $('quran').innerHTML = quranProgress.map((item) => {
-    let portion = 'Lesson';
-
-    if (item.surah_name) portion = item.surah_name;
-    else if (item.juz_number) portion = `Juz ${item.juz_number}`;
-    else if (item.page_number) portion = `Page ${item.page_number}`;
-
-    const range = item.ayah_from || item.ayah_to
-      ? ` · Ayah ${item.ayah_from || ''}-${item.ayah_to || ''}`
-      : '';
-
-    const progressText = item.completion_percent == null
-      ? ''
-      : `Progress: ${item.completion_percent}% · `;
-
-    return `
-      <li>
-        <b>${esc(item.track)}</b> · ${esc(portion)}${esc(range)}<br>
-        ${esc(progressText)}${esc(item.next_target || '')}
-      </li>
-    `;
-  }).join('') || '<li>No Quran progress yet.</li>';
-
   const totalDue = charges.reduce(
     (sum, item) => sum + Math.max(0, Number(item.current_payable || 0)),
     0
@@ -357,16 +303,10 @@ async function init() {
   `).join('') || '<tr><td colspan="4">No payment record.</td></tr>';
 
   const notes = [];
-
   enrollments
     .filter((item) => item.notes)
     .slice(0, 3)
     .forEach((item) => notes.push(`${item.course_code}: ${item.notes}`));
-
-  quranProgress.slice(0, 5).forEach((item) => {
-    if (item.teacher_note) notes.push(`Quran: ${item.teacher_note}`);
-    if (item.next_target) notes.push(`Next target: ${item.next_target}`);
-  });
 
   sessionRows
     .filter((item) => item.homework)
