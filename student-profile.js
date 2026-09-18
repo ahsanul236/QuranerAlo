@@ -42,7 +42,7 @@ function mode(){
   ['fullName','gender','dateOfBirth','email','admissionDate','status','notes'].forEach(id=>$(id).disabled=!se);
   $('editBadge').textContent=se?'Edit mode':'View mode';
   $('guardianPermissionBadge').textContent=ge?'Edit mode':'View mode';
-  $('editBtn').classList.toggle('hidden',editing||!access?.can('students.manage'));
+  $('editBtn').classList.toggle('hidden',editing||!access?.can('students.manage'));$('removeBtn').classList.toggle('hidden',editing||!access?.can('students.manage'));
   $('saveBtn').classList.toggle('hidden',!editing);
   $('cancelBtn').classList.toggle('hidden',!editing);
   $('guardianNote').textContent=ge?'Guardian তথ্যও এখান থেকে edit করা যাবে।':'Guardian তথ্য দেখা যাবে; edit করতে guardians.manage permission প্রয়োজন।';
@@ -81,7 +81,7 @@ async function save(){
 }
 
 $('editBtn').onclick=()=>{editing=true;msg('');mode();};
-$('cancelBtn').onclick=async()=>{editing=false;msg('');await load();};
+$('cancelBtn').onclick=async()=>{editing=false;msg('');await load();};$('removeBtn').onclick=async()=>{if(!access?.can('students.manage')){msg('Student remove permission নেই।','error');return;}const name=student?.full_name||student?.student_code||'এই শিক্ষার্থী';const ok=window.confirm(`আপনি কি "${name}"-এর profile remove করতে চান?\\n\\nRemove করলে profile-টি স্থায়ীভাবে মুছে ফেলা হবে না; Student status "Withdrawn" করা হবে এবং fee, attendance, Quran progress ও অন্যান্য history সংরক্ষিত থাকবে।\\n\\nনিশ্চিত করতে OK চাপুন।`);if(!ok)return;$('removeBtn').disabled=true;msg('Removing profile…');try{const {error}=await supabase.from('qa_students').update({status:'withdrawn'}).eq('student_id',studentId);if(error)throw error;window.location.replace('students.html');}catch(e){console.error(e);msg(e?.message||'Profile remove করা যায়নি।','error');$('removeBtn').disabled=false;}};
 $('profileForm').onsubmit=async e=>{e.preventDefault();$('saveBtn').disabled=true;msg('Saving changes…');try{await save();msg('Student profile updated successfully.','success');}catch(err){console.error(err);msg(err?.message||'Profile update করা যায়নি।','error');}finally{$('saveBtn').disabled=false;}};
 $('signOut').onclick=async()=>{await supabase.auth.signOut();login();};
 
