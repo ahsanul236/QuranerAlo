@@ -72,8 +72,8 @@ async function load() {
 
   const table = mode === 'teacher' ? 'qa_teachers' : 'qa_staff';
   const fields = mode === 'teacher'
-    ? 'teacher_id,teacher_code,full_name,full_name_bn,phone,email,specialization,joining_date,active,user_id'
-    : 'staff_id,staff_code,full_name,phone,email,joining_date,active,user_id';
+    ? 'teacher_id,teacher_code,full_name,full_name_bn,phone,email,specialization,father_name,mother_name,nid_number,address,joining_date,active,user_id'
+    : 'staff_id,staff_code,full_name,phone,email,father_name,mother_name,nid_number,address,joining_date,active,user_id';
 
   const query = supabase.from(table).select(fields).eq('active', true).order('created_at', { ascending: false });
   const { data, error } = await query;
