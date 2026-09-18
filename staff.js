@@ -42,8 +42,8 @@ function resetForm() {
 }
 function updatePageContext() {
   const teacher = mode === 'teacher';
-  $('brandSubtitle').textContent = teacher ? 'Teacher Management' : 'Helper Management';
-  $('pageEyebrow').textContent = teacher ? 'TEACHER MANAGEMENT' : 'HELPER MANAGEMENT';
+  $('brandSubtitle').textContent = teacher ? 'শিক্ষক ব্যবস্থাপনা' : 'হেল্পার ব্যবস্থাপনা';
+  $('pageEyebrow').textContent = teacher ? 'শিক্ষক' : 'হেল্পার';
   $('pageTitle').textContent = teacher ? 'শিক্ষক ব্যবস্থাপনা' : 'হেল্পার ব্যবস্থাপনা';
   $('pageSubtitle').textContent = teacher
     ? 'Teacher profile, portal access এবং নতুন teacher যোগ করার ব্যবস্থাপনা।'
