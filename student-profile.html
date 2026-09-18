@@ -12,7 +12,7 @@
 <style>
 .profile-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin:14px 0 20px;flex-wrap:wrap}
 .profile-head h1{font-size:30px;margin:0}
-.profile-actions{display:flex;gap:10px;flex-wrap:wrap}
+.profile-actions{display:flex;gap:10px;flex-wrap:wrap}.danger-btn{border:1px solid #b42318;background:#fff;color:#b42318;border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer}.danger-btn:hover{background:#fff5f4}.danger-btn:disabled{opacity:.6;cursor:not-allowed}
 .profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .profile-card{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden}
 .profile-card.full{grid-column:1/-1}
@@ -54,7 +54,7 @@
 </div>
 <div class="profile-actions">
 <a class="secondary-btn" href="students.html">← শিক্ষার্থী তালিকা</a>
-<button id="editBtn" class="primary-btn" type="button">Edit Profile</button>
+<button id="editBtn" class="primary-btn" type="button">Edit Profile</button><button id="removeBtn" class="danger-btn hidden" type="button">Remove This Profile</button>
 </div>
 </div>
 
@@ -95,7 +95,7 @@
 </section>
 </main>
 <script src="supabase-config.js"></script>
-<script type="module" src="student-profile.js?v=20260918-1"></script>
+<script type="module" src="student-profile.js?v=20260918-2"></script>
 <script src="management-nav.js?v=20260918-3"></script>
 </body>
 </html>
