@@ -188,6 +188,10 @@ $('staffForm').addEventListener('submit', async event => {
         phone: String(form.get('phone') || '').trim(),
         email: String(form.get('email') || '').trim(),
         specialization: String(form.get('specialization') || '').trim() || null,
+        father_name: String(form.get('father_name') || '').trim(),
+        mother_name: String(form.get('mother_name') || '').trim(),
+        nid_number: String(form.get('nid_number') || '').trim(),
+        address: String(form.get('address') || '').trim(),
         joining_date: form.get('joining_date') || null,
         notes: String(form.get('notes') || '').trim()
       }).select('teacher_code,full_name').single();
@@ -199,6 +203,10 @@ $('staffForm').addEventListener('submit', async event => {
         staff_type: 'helper',
         phone: String(form.get('phone') || '').trim(),
         email: String(form.get('email') || '').trim(),
+        father_name: String(form.get('father_name') || '').trim(),
+        mother_name: String(form.get('mother_name') || '').trim(),
+        nid_number: String(form.get('nid_number') || '').trim(),
+        address: String(form.get('address') || '').trim(),
         joining_date: form.get('joining_date') || null,
         notes: String(form.get('notes') || '').trim()
       }).select('staff_code,full_name').single();
