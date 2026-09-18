@@ -1,1 +1,115 @@
-<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b2342"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://xjysbpthosvjxzujmuhe.supabase.co;"><title>Finance & Vouchers | QURANER ALO</title><link rel="icon" type="image/jpeg" href="assets/quraner-alo-logo.jpg"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="dashboard.css?v=20260918-5"></head><body><main class="dashboard-shell"><section class="card dashboard-card"><div class="topbar"><div class="brand-mini"><img src="assets/quraner-alo-logo.jpg" width="58" height="58" alt="QURANER ALO logo"><div><strong>কোরআনের আলো</strong><span>Finance & Voucher Management</span></div></div><div class="top-actions"><a class="quick-link" href="dashboard.html">← Dashboard</a><button id="signOut" class="secondary-btn" type="button">Sign out</button></div></div><div id="loading" class="notice-box">Finance module load হচ্ছে…</div><div id="app" class="hidden"><div class="dashboard-grid"><div class="stat"><div class="kicker">Income</div><strong id="incomeTotal">৳0.00</strong></div><div class="stat"><div class="kicker">Expense</div><strong id="expenseTotal">৳0.00</strong></div><div class="stat"><div class="kicker">Net</div><strong id="netTotal">৳0.00</strong></div><div class="stat"><div class="kicker">Vouchers</div><strong id="voucherTotal">0</strong></div></div><div id="income" class="panel"><div id="expense" class="anchor-target"></div><div class="panel-head"><h2>Income / Expense Entry</h2><span class="eyebrow">FINANCE.MANAGE</span></div><form id="financeForm" class="form-grid" style="padding:18px"><label>Direction<select id="direction"><option value="income">Income</option><option value="expense">Expense</option></select></label><label>Date<input id="transactionDate" type="date" required></label><label>Category<input id="category" required placeholder="Fee, Donation, Salary, Internet..."></label><label>Amount (৳)<input id="amount" type="number" min="0.01" step="0.01" required></label><label>Account<select id="accountName"><option>Cash</option><option>Bank</option><option>bKash</option><option>Nagad</option><option>Rocket</option><option>Other</option></select></label><label>Reference<input id="reference" placeholder="Voucher / transaction reference"></label><label class="span-2">Description<textarea id="description"></textarea></label><div class="span-2 page-actions"><button class="primary-btn" style="width:auto" type="submit">Save Transaction</button></div></form><div id="financeMessage" class="message-inline"></div></div><div id="vouchers" class="panel"><div class="panel-head"><h2>Voucher Entry</h2><span class="eyebrow">VOUCHERS.MANAGE</span></div><form id="voucherForm" class="form-grid" style="padding:18px"><label>Voucher Type<select id="voucherType"><option value="expense">Expense Voucher</option><option value="donation">Donation Receipt</option><option value="income">Income Voucher</option><option value="salary_payment">Salary Payment Voucher</option><option value="fee_receipt">Fee Receipt</option><option value="cash_transfer">Cash Transfer</option><option value="advance">Advance Voucher</option><option value="refund">Refund Voucher</option></select></label><label>Date<input id="voucherDate" type="date" required></label><label>Amount (৳)<input id="voucherAmount" type="number" min="0" step="0.01" required></label><label>Account<select id="voucherAccount"><option>Cash</option><option>Bank</option><option>bKash</option><option>Nagad</option><option>Rocket</option><option>Other</option></select></label><label>Party Name<input id="partyName" placeholder="Student / Teacher / Donor / Vendor"></label><label>Reference<input id="voucherReference"></label><label class="span-2">Description<textarea id="voucherDescription"></textarea></label><div class="span-2 page-actions"><button class="primary-btn" style="width:auto" type="submit">Create Voucher</button></div></form><div id="voucherMessage" class="message-inline"></div></div><div class="panel"><div class="panel-head"><h2>Recent Finance Transactions</h2></div><div class="table-wrap"><table class="user-table attendance-table"><thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Account</th><th>Reference</th></tr></thead><tbody id="financeRows"></tbody></table></div></div><div class="panel"><div class="panel-head"><h2>Recent Vouchers</h2></div><div class="table-wrap"><table class="user-table attendance-table"><thead><tr><th>Voucher No.</th><th>Date</th><th>Type</th><th>Amount</th><th>Party</th><th>Status</th><th>Print</th></tr></thead><tbody id="voucherRows"></tbody></table></div></div><p class="footer-note">Voucher numbering is generated server-side. Financial records are protected by RLS.</p></div></section></main><script src="supabase-config.js"></script><script type="module" src="finance.js"></script><script src="management-nav.js?v=20260918-4"></script></body></html>
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b2342">
+<title>Finance & Vouchers | QURANER ALO</title>
+<link rel="icon" type="image/jpeg" href="assets/quraner-alo-logo.jpg">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="dashboard.css?v=20260918-5">
+<style>
+.finance-page-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 20px}
+.finance-page-head h1{margin:0;font-size:30px}
+.finance-view{display:none}
+.finance-view.is-active{display:block}
+.finance-summary{margin-bottom:20px}
+.finance-summary .stat{min-height:120px}
+.finance-entry-card{margin-top:0}
+.finance-entry-card .panel-head h2{font-size:21px}
+.finance-inline-note{padding:0 18px 18px;color:var(--muted);font-size:13px}
+.voucher-source{font-size:12px;color:var(--muted)}
+@media(max-width:900px){.finance-page-head h1{font-size:26px}}
+</style>
+</head>
+<body>
+<main class="dashboard-shell"><section class="card dashboard-card">
+<div class="topbar">
+  <div class="brand-mini"><img src="assets/quraner-alo-logo.jpg" width="58" height="58" alt="QURANER ALO logo"><div><strong>কোরআনের আলো</strong><span id="brandSubtitle">Income Management</span></div></div>
+  <div class="top-actions"><a class="quick-link" href="dashboard.html">← Dashboard</a><button id="signOut" class="secondary-btn" type="button">Sign out</button></div>
+</div>
+<div id="loading" class="notice-box">Finance module load হচ্ছে…</div>
+<div id="app" class="hidden">
+
+<div class="finance-summary">
+  <div class="dashboard-grid">
+    <div class="stat"><div class="kicker">Income</div><strong id="incomeTotal">৳0.00</strong></div>
+    <div class="stat"><div class="kicker">Expense</div><strong id="expenseTotal">৳0.00</strong></div>
+    <div class="stat"><div class="kicker">Net</div><strong id="netTotal">৳0.00</strong></div>
+    <div class="stat"><div class="kicker">Vouchers</div><strong id="voucherTotal">0</strong></div>
+  </div>
+</div>
+
+<section id="incomeView" class="finance-view">
+  <div class="finance-page-head">
+    <div><p class="eyebrow">INCOME MANAGEMENT</p><h1>আয় ব্যবস্থাপনা</h1><p class="muted">শুধু Income entry এবং Income records এখানে দেখানো হবে। প্রতিটি নতুন Income-এর জন্য Voucher স্বয়ংক্রিয়ভাবে তৈরি হবে।</p></div>
+  </div>
+  <div class="panel finance-entry-card">
+    <div class="panel-head"><h2>নতুন Income</h2><span class="eyebrow">INCOME.MANAGE</span></div>
+    <form id="financeForm" class="form-grid" style="padding:18px">
+      <input id="direction" type="hidden" value="income">
+      <label>Date<input id="transactionDate" type="date" required></label>
+      <label>Category<input id="category" required placeholder="Donation, Service, Other..."></label>
+      <label>Amount (৳)<input id="amount" type="number" min="0.01" step="0.01" required></label>
+      <label>Account<select id="accountName"><option>Cash</option><option>Bank</option><option>bKash</option><option>Nagad</option><option>Rocket</option><option>Other</option></select></label>
+      <label>Reference<input id="reference" placeholder="Optional reference"></label>
+      <label class="span-2">Description<textarea id="description"></textarea></label>
+      <div class="span-2 page-actions"><button class="primary-btn" style="width:auto" type="submit">Save Income & Generate Voucher</button></div>
+    </form>
+    <div id="financeMessage" class="message-inline" style="padding:0 18px 18px"></div>
+  </div>
+  <div class="panel"><div class="panel-head"><h2>Recent Income</h2><span id="incomeCount" class="eyebrow">0 records</span></div>
+    <div class="table-wrap"><table class="user-table attendance-table"><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Account</th><th>Reference</th><th>Voucher</th></tr></thead><tbody id="incomeRows"></tbody></table></div>
+  </div>
+</section>
+
+<section id="expenseView" class="finance-view">
+  <div class="finance-page-head">
+    <div><p class="eyebrow">EXPENSE MANAGEMENT</p><h1>ব্যয় ব্যবস্থাপনা</h1><p class="muted">শুধু Expense entry এবং Expense records এখানে দেখানো হবে। প্রতিটি নতুন Expense-এর জন্য Voucher স্বয়ংক্রিয়ভাবে তৈরি হবে।</p></div>
+  </div>
+  <div class="panel finance-entry-card">
+    <div class="panel-head"><h2>নতুন Expense</h2><span class="eyebrow">EXPENSE.MANAGE</span></div>
+    <form id="expenseForm" class="form-grid" style="padding:18px">
+      <label>Date<input id="expenseDate" type="date" required></label>
+      <label>Category<input id="expenseCategory" required placeholder="Internet, Salary, Utilities..."></label>
+      <label>Amount (৳)<input id="expenseAmount" type="number" min="0.01" step="0.01" required></label>
+      <label>Account<select id="expenseAccount"><option>Cash</option><option>Bank</option><option>bKash</option><option>Nagad</option><option>Rocket</option><option>Other</option></select></label>
+      <label>Reference<input id="expenseReference" placeholder="Optional reference"></label>
+      <label class="span-2">Description<textarea id="expenseDescription"></textarea></label>
+      <div class="span-2 page-actions"><button class="primary-btn" style="width:auto" type="submit">Save Expense & Generate Voucher</button></div>
+    </form>
+    <div id="expenseMessage" class="message-inline" style="padding:0 18px 18px"></div>
+  </div>
+  <div class="panel"><div class="panel-head"><h2>Recent Expense</h2><span id="expenseCount" class="eyebrow">0 records</span></div>
+    <div class="table-wrap"><table class="user-table attendance-table"><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Account</th><th>Reference</th><th>Voucher</th></tr></thead><tbody id="expenseRows"></tbody></table></div>
+  </div>
+</section>
+
+<section id="vouchersView" class="finance-view">
+  <div class="finance-page-head">
+    <div><p class="eyebrow">VOUCHER MANAGEMENT</p><h1>ভাউচার ব্যবস্থাপনা</h1><p class="muted">Income, Expense, Fee এবং Paid Payroll-এর স্বয়ংক্রিয় Voucher এখানে পাওয়া যাবে। Manual voucher-ও তৈরি করা যাবে।</p></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h2>Manual Voucher Entry</h2><span class="eyebrow">VOUCHERS.MANAGE</span></div>
+    <form id="voucherForm" class="form-grid" style="padding:18px">
+      <label>Voucher Type<select id="voucherType"><option value="expense">Expense Voucher</option><option value="donation">Donation Receipt</option><option value="income">Income Voucher</option><option value="salary_payment">Salary Payment Voucher</option><option value="fee_receipt">Fee Receipt</option><option value="cash_transfer">Cash Transfer</option><option value="advance">Advance Voucher</option><option value="refund">Refund Voucher</option></select></label>
+      <label>Date<input id="voucherDate" type="date" required></label>
+      <label>Amount (৳)<input id="voucherAmount" type="number" min="0" step="0.01" required></label>
+      <label>Account<select id="voucherAccount"><option>Cash</option><option>Bank</option><option>bKash</option><option>Nagad</option><option>Rocket</option><option>Other</option></select></label>
+      <label>Party Name<input id="partyName" placeholder="Student / Teacher / Donor / Vendor"></label>
+      <label>Reference<input id="voucherReference"></label>
+      <label class="span-2">Description<textarea id="voucherDescription"></textarea></label>
+      <div class="span-2 page-actions"><button class="primary-btn" style="width:auto" type="submit">Create Voucher</button></div>
+    </form>
+    <div id="voucherMessage" class="message-inline" style="padding:0 18px 18px"></div>
+  </div>
+  <div class="panel"><div class="panel-head"><h2>Recent Vouchers</h2><span id="voucherCount" class="eyebrow">0 vouchers</span></div>
+    <div class="table-wrap"><table class="user-table attendance-table"><thead><tr><th>Voucher No.</th><th>Date</th><th>Type</th><th>Amount</th><th>Party</th><th>Source</th><th>Status</th><th>Print</th></tr></thead><tbody id="voucherRows"></tbody></table></div>
+  </div>
+</section>
+
+<p class="footer-note">Income/Expense vouchers are generated server-side and linked to their source transaction.</p>
+</div></section></main>
+<script src="supabase-config.js"></script>
+<script type="module" src="finance.js?v=20260918-1"></script>
+<script src="management-nav.js?v=20260918-4"></script>
+</body></html>
