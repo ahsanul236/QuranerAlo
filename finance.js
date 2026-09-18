@@ -17,6 +17,7 @@ function updateView(){
   const target=currentView==='income'?'incomeView':currentView==='expense'?'expenseView':'vouchersView';
   $(target)?.classList.add('is-active');
   $('brandSubtitle').textContent=currentView==='income'?'Income Management':currentView==='expense'?'Expense Management':'Voucher Management';
+  $('financeSummary')?.classList.toggle('hidden',currentView==='vouchers');
   setFormEnabled('financeForm',currentView==='income'&&canFinanceManage);
   setFormEnabled('expenseForm',currentView==='expense'&&canFinanceManage);
   setFormEnabled('voucherForm',currentView==='vouchers'&&canVoucherManage);
