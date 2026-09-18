@@ -5,4 +5,4 @@
 .receipt > .watermark{z-index:0;}
 .receipt > *:not(.watermark){z-index:1;}
 .party-box,.items,.totals,.notes{background:transparent;}
-.item-row:not(.head){background:transparent;}
+ .item-row:not(.head),.item-row.head{background:transparent;}
