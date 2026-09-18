@@ -18,26 +18,6 @@ function formatDate(value) {
   return value ? new Date(`${value}T00:00:00`).toLocaleDateString('en-GB') : '—';
 }
 
-function formatTime(value) {
-  return value ? new Date(value).toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit'
-  }) : '—';
-}
-
-function safeLink(url) {
-  if (!url) return '';
-
-  try {
-    const u = new URL(url);
-    if (!['http:', 'https:'].includes(u.protocol)) return '';
-
-    return `<a class="quick-link" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">Join</a>`;
-  } catch {
-    return '';
-  }
-}
-
 function statusClass(value) {
   const v = String(value || '').toLowerCase();
 
@@ -157,37 +137,6 @@ async function init() {
     </tr>
   `).join('') || '<tr><td colspan="4">No assigned students.</td></tr>';
 
-  const { data: classData, error: classError } = await supabase
-    .from('qa_class_sessions')
-    .select('session_id,session_date,starts_at,ends_at,course_code,topic,homework,status,meeting_link')
-    .eq('teacher_id', teacher.teacher_id)
-    .order('session_date', { ascending: false })
-    .limit(30);
-
-  if (classError) throw classError;
-
-  const classes = classData || [];
-
-  $('classRows').innerHTML = classes.map((item) => `
-    <tr>
-      <td>
-        ${esc(formatDate(item.session_date))}<br>
-        <small>
-          ${esc(formatTime(item.starts_at))}
-          ${item.ends_at ? `–${esc(formatTime(item.ends_at))}` : ''}
-        </small>
-      </td>
-      <td>${esc(item.course_code)}</td>
-      <td>
-        ${esc(item.topic || 'Class')}
-        ${item.homework ? `<br><span class="muted">Homework: ${esc(item.homework)}</span>` : ''}
-      </td>
-      <td>
-        <span class="active-badge ${statusClass(item.status)}">${esc(item.status)}</span>
-        ${safeLink(item.meeting_link)}
-      </td>
-    </tr>
-  `).join('') || '<tr><td colspan="4">No class sessions.</td></tr>';
 
   $('exitPreview')?.addEventListener('click', () => {
     location.href = 'dashboard.html';
