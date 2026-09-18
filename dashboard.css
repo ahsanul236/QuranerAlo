@@ -89,3 +89,7 @@
   .panel-head{padding:15px 16px}
   .user-table th,.user-table td,.student-table th,.student-table td,.staff-table th,.staff-table td{padding:10px 9px}
 }
+
+
+/* Consistent page title pattern used across management modules */
+.page-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin:12px 0 20px;flex-wrap:wrap}.page-head h1{font-size:32px;line-height:1.2;margin:0;color:var(--navy);font-weight:700}.page-head .muted{max-width:780px}.page-head .eyebrow{margin-bottom:6px}@media(max-width:640px){.page-head h1{font-size:27px}}
