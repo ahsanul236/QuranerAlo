@@ -32,7 +32,7 @@ function guardianHtml(g){
   const dis=!(editing&&access?.can('guardians.manage'));
   return `<div class="guardian-card"><div class="guardian-title"><strong>${g.is_primary?'প্রধান Guardian':'Guardian'}</strong><span class="readonly-badge">${esc(g.relation||'Guardian')}</span></div><div class="profile-fields">
   <div class="profile-field"><label>পূর্ণ নাম</label><input data-g-field="full_name" data-g-id="${esc(g.guardian_id)}" value="${esc(g.full_name)}" ${dis?'disabled':''}></div>
-  <div class="profile-field"><label>সম্পর্ক</label><select data-g-field="relation" data-g-id="${esc(g.guardian_id)}" ${dis?'disabled':''}><option value="">নির্বাচন করুন</option><option value="Father" ${g.relation==='Father'?'selected':''}>Father</option><option value="Mother" ${g.relation==='Mother'?'selected':''}>Mother</option><option value="Guardian" ${g.relation==='Guardian'?'selected':''}>Guardian</option><option value="Other" ${g.relation==='Other'?'selected':''}>Other</option></select></div>
+  <div class="profile-field"><label>সম্পর্ক</label><select data-g-field="relation" data-g-id="${esc(g.guardian_id)}" ${dis?'disabled':''}><option value="">নির্বাচন করুন</option><option value="Father" ${g.relation==='Father'?'selected':''}>Father</option><option value="Mother" ${g.relation==='Mother'?'selected':''}>Mother</option><option value="Other" ${g.relation==='Other'?'selected':''}>Other</option></select></div>
   <div class="profile-field"><label>ফোন</label><input data-g-field="phone" data-g-id="${esc(g.guardian_id)}" value="${esc(g.phone)}" ${dis?'disabled':''}></div>
   <div class="profile-field"><label>Email</label><input data-g-field="email" data-g-id="${esc(g.guardian_id)}" type="email" value="${esc(g.email)}" ${dis?'disabled':''}></div>
   <div class="profile-field full"><label>ঠিকানা</label><textarea data-g-field="address" data-g-id="${esc(g.guardian_id)}" rows="2" ${dis?'disabled':''}>${esc(g.address)}</textarea></div>
@@ -73,7 +73,7 @@ async function save(){
   if(!access?.can('students.manage'))throw new Error('Student edit permission নেই।');
   const payload={full_name:$('fullName').value.trim(),gender:$('gender').value,date_of_birth:$('dateOfBirth').value||null,admission_date:$('admissionDate').value||null,status:$('status').value,notes:$('notes').value.trim(),father_name:$('fatherName').value.trim(),father_nid:$('fatherNid').value.trim(),mother_name:$('motherName').value.trim(),mother_nid:$('motherNid').value.trim(),birth_registration_no:$('birthRegistrationNo').value.trim()};
   if(!payload.full_name)throw new Error('Student-এর নাম দিতে হবে।');
-  const {data,error}=await supabase.from('qa_students').update(payload).eq('student_id',studentId).select('student_id,student_code,full_name,gender,date_of_birth,email,admission_date,status,notes,user_id,created_at,updated_at').single();
+  const {data,error}=await supabase.from('qa_students').update(payload).eq('student_id',studentId).select('student_id,student_code,full_name,gender,date_of_birth,admission_date,status,notes,father_name,father_nid,mother_name,mother_nid,birth_registration_no,user_id,created_at,updated_at').single();
   if(error)throw error;student=data;
   if(access.can('guardians.manage'))for(const g of guardians){
     const q=s=>document.querySelector(`[data-g-field="${s}"][data-g-id="${CSS.escape(g.guardian_id)}"]`);
