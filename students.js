@@ -47,9 +47,8 @@ function renderStudents(list) {
   $('countLabel').textContent = `${list.length} জন`;
   $('studentRows').innerHTML = list.map((s) => `
     <tr>
-      <td class="student-code">${escapeHtml(s.student_code)}</td>
+      <td class="student-code"><a class="student-id-link" href="student-profile.html?id=${encodeURIComponent(s.student_id)}">${escapeHtml(s.student_code)}</a></td>
       <td>${escapeHtml(s.full_name)}</td>
-      <td>${escapeHtml(s.phone)}</td>
       <td>${escapeHtml(s.admission_date || '')}</td>
       <td><span class="active-badge ${s.status === 'active' ? 'on' : 'off'}">${escapeHtml(s.status)}</span></td>
       <td>${activationBadge(s.user_id)}</td>
@@ -174,7 +173,7 @@ $('search').addEventListener('input', () => {
   const q = $('search').value.trim().toLowerCase();
   if (!q) return renderStudents(allStudents);
   renderStudents(allStudents.filter((s) =>
-    [s.student_code, s.full_name, s.phone, s.email].join(' ').toLowerCase().includes(q)
+    [s.student_code, s.full_name, s.email].join(' ').toLowerCase().includes(q)
   ));
 });
 
@@ -204,7 +203,6 @@ $('studentForm').addEventListener('submit', async (event) => {
         full_name: String(form.get('full_name') || '').trim(),
         gender: String(form.get('gender') || 'unspecified'),
         date_of_birth: form.get('date_of_birth') || '',
-        phone: String(form.get('phone') || '').trim(),
         email: String(form.get('email') || '').trim(),
         admission_date: form.get('admission_date') || new Date().toISOString().slice(0, 10),
         status: String(form.get('status') || 'active'),
