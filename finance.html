@@ -12,8 +12,6 @@
 .finance-page-head h1{margin:0;font-size:30px}
 .finance-view{display:none}
 .finance-view.is-active{display:block}
-.finance-summary{margin-bottom:20px}
-.finance-summary .stat{min-height:120px}
 .finance-entry-card{margin-top:0}
 .finance-entry-card .panel-head h2{font-size:21px}
 .finance-inline-note{padding:0 18px 18px;color:var(--muted);font-size:13px}
@@ -29,15 +27,6 @@
 </div>
 <div id="loading" class="notice-box">Finance module load হচ্ছে…</div>
 <div id="app" class="hidden">
-
-<div class="finance-summary">
-  <div class="dashboard-grid">
-    <div class="stat"><div class="kicker">Income</div><strong id="incomeTotal">৳0.00</strong></div>
-    <div class="stat"><div class="kicker">Expense</div><strong id="expenseTotal">৳0.00</strong></div>
-    <div class="stat"><div class="kicker">Net</div><strong id="netTotal">৳0.00</strong></div>
-    <div class="stat"><div class="kicker">Vouchers</div><strong id="voucherTotal">0</strong></div>
-  </div>
-</div>
 
 <section id="incomeView" class="finance-view">
   <div class="finance-page-head">
@@ -172,6 +161,6 @@
 </div><p class="footer-note">Income/Expense vouchers are generated server-side and linked to their source transaction.</p>
 </div></section></main>
 <script src="supabase-config.js"></script>
-<script type="module" src="finance.js?v=20260918-2"></script>
+<script type="module" src="finance.js?v=20260918-3"></script>
 <script src="management-nav.js?v=20260918-4"></script>
 </body></html>
