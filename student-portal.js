@@ -1,25 +1,402 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-const c=window.QURANER_ALO_CONFIG;const supabase=createClient(c.supabaseUrl,c.supabasePublishableKey,{auth:{autoRefreshToken:true,persistSession:true}});const $=id=>document.getElementById(id);const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
-function statusClass(value){const v=String(value||'').toLowerCase();if(['active','present','paid','scheduled','completed'].includes(v))return 'on';if(['absent','inactive','overdue','cancelled'].includes(v))return 'off';return '';}
-function money(value){return `৳${Number(value||0).toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2})}`;}
-function formatDate(value){return value?new Date(`${value}T00:00:00`).toLocaleDateString('en-GB'):'—';}
-function formatDateTime(value){return value?new Date(value).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'}):'—';}
-function safeLink(url,label='Join class'){if(!url)return '';try{const u=new URL(url);if(!['http:','https:'].includes(u.protocol))return '';return `<a class="quick-link" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`;}catch{return '';}}
-async function getViewerProfile(session){const {data,error}=await supabase.from('qa_users').select('role,active').eq('user_id',session.user.id).maybeSingle();if(error)throw error;return data;}
-async function resolveStudent(session){const previewId=new URLSearchParams(window.location.search).get('preview_student');const viewer=await getViewerProfile(session);if(previewId){if(!viewer||!viewer.active||viewer.role!=='owner')throw new Error('PREVIEW_NOT_ALLOWED');const {data,error}=await supabase.functions.invoke('portal-preview',{body:{entityType:'student',entityId:previewId}});if(error)throw error;if(!data?.ok||data.entityType!=='student'||!data.entity)throw new Error(data?.error||'PREVIEW_NOT_FOUND');const p=data.entity;$('previewBanner').classList.remove('hidden');$('previewText').textContent=`Read-only preview · ${p.student_code} · ${p.full_name}`;return p;}const {data:p,error}=await supabase.from('qa_students').select('student_id,student_code,full_name,status,phone,email').eq('user_id',session.user.id).maybeSingle();if(error||!p)throw error||new Error('STUDENT_PROFILE_NOT_FOUND');return p;}
-async function init(){const {data:{session}}=await supabase.auth.getSession();if(!session){location.replace('./');return;}const p=await resolveStudent(session);if(p.status!=='active'){await supabase.auth.signOut();location.replace('./');return;}$('loginId').textContent=p.student_code;$('studentName').textContent=p.full_name;$('studentCode').textContent=p.student_code;$('studentStatus').textContent=p.status;
-const [en,link,att,qr,fc,fp]=await Promise.all([supabase.from('qa_enrollments').select('course_code,start_date,end_date,status,teacher_user_id,notes').eq('student_id',p.student_id).order('start_date',{ascending:false}),supabase.from('qa_student_guardians').select('guardian_id,is_primary').eq('student_id',p.student_id),supabase.from('qa_attendance').select('attendance_date,status,remarks').eq('student_id',p.student_id).order('attendance_date',{ascending:false}).limit(12),supabase.from('qa_quran_progress').select('lesson_date,track,surah_name,juz_number,ayah_from,ayah_to,page_number,sabaq,sabqi,manzil,completion_percent,teacher_note,next_target,teacher_id').eq('student_id',p.student_id).order('lesson_date',{ascending:false}).limit(12),supabase.from('qa_fee_charges').select('billing_month,expected_amount,discount,previous_due,current_payable,due_date,status').eq('student_id',p.student_id).order('billing_month',{ascending:false}).limit(12),supabase.from('qa_fee_payments').select('receipt_no,paid_at,amount,payment_method').eq('student_id',p.student_id).order('paid_at',{ascending:false}).limit(12)]);
-const enrollments=en.data||[];const guardianLinks=link.data||[];
-let guardianMap={};if(guardianLinks.length){const ids=guardianLinks.map(x=>x.guardian_id);const {data:gs}=await supabase.from('qa_guardians').select('guardian_id,full_name,relation,phone,email,address').in('guardian_id',ids);guardianMap=Object.fromEntries((gs||[]).map(x=>[x.guardian_id,x]));}
-let teacherMap={};const teacherUserIds=[...new Set(enrollments.map(x=>x.teacher_user_id).filter(Boolean))];if(teacherUserIds.length){const {data:ts}=await supabase.from('qa_teachers').select('user_id,teacher_code,full_name,full_name_bn,phone,specialization').in('user_id',teacherUserIds);teacherMap=Object.fromEntries((ts||[]).map(x=>[x.user_id,x]));}
-let sessionRows=[];const courseCodes=[...new Set(enrollments.filter(x=>x.status==='active').map(x=>x.course_code).filter(Boolean))];if(courseCodes.length){const {data:ss}=await supabase.from('qa_class_sessions').select('session_id,teacher_id,course_code,session_date,starts_at,ends_at,mode,meeting_link,topic,quran_portion,homework,status,notes').in('course_code',courseCodes).order('session_date',{ascending:true}).limit(20);sessionRows=ss||[];}
-$('guardians').innerHTML=guardianLinks.map(g=>{const x=guardianMap[g.guardian_id];if(!x)return '';return `<div class="portal-stat"><small>${esc(x.relation||'Guardian')}${g.is_primary?' · Primary':''}</small><strong>${esc(x.full_name)}</strong><span class="muted">${esc(x.phone||'')}</span>${x.email?`<span class="muted">${esc(x.email)}</span>`:''}${x.address?`<span class="muted">${esc(x.address)}</span>`:''}</div>`;}).join('')||'<p class="portal-note">Guardian information has not been added yet.</p>';
-$('enrollments').innerHTML=enrollments.map(x=>{const t=teacherMap[x.teacher_user_id];return `<div class="portal-stat"><small>${esc(x.course_code)} · <span class="active-badge ${statusClass(x.status)}">${esc(x.status)}</span></small><strong>${esc(t?.full_name||'Teacher not assigned')}</strong>${t?.specialization?`<span class="muted">${esc(t.specialization)}</span>`:''}<span class="muted">Start: ${esc(x.start_date||'—')} · End: ${esc(x.end_date||'—')}</span>${x.notes?`<span class="muted">${esc(x.notes)}</span>`:''}</div>`;}).join('')||'<p class="portal-note">No enrollment found.</p>';
-const upcoming=sessionRows.filter(x=>x.status!=='cancelled'&&(x.starts_at?new Date(x.starts_at)>=new Date():new Date(`${x.session_date}T23:59:59`)>=new Date())).slice(0,6);$('scheduleRows').innerHTML=upcoming.map(x=>`<tr><td>${esc(formatDate(x.session_date))}</td><td>${esc(x.starts_at?formatDateTime(x.starts_at).split(', ').pop():'—')}${x.ends_at?` – ${esc(new Date(x.ends_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}))`:''}</td><td>${esc(x.course_code)}</td><td>${esc(x.topic||'Class')}</td><td>${esc(x.mode||'online')}</td><td>${safeLink(x.meeting_link)}</td></tr>`).join('')||'<tr><td colspan="6">No upcoming class scheduled.</td></tr>';
-const attendance=att.data||[];$('presentCount').textContent=attendance.filter(x=>x.status==='present').length;$('absentCount').textContent=attendance.filter(x=>x.status==='absent').length;$('otherAttendanceCount').textContent=attendance.filter(x=>!['present','absent'].includes(x.status)).length;$('attendanceRows').innerHTML=attendance.map(x=>`<tr><td>${esc(formatDate(x.attendance_date))}</td><td><span class="active-badge ${statusClass(x.status)}">${esc(x.status)}</span></td><td>${esc(x.remarks||'')}</td></tr>`).join('')||'<tr><td colspan="3">No attendance record.</td></tr>';
-$('quran').innerHTML=(qr.data||[]).map(x=>{const portion=x.surah_name?x.surah_name:(x.juz_number?`Juz ${x.juz_number}`:(x.page_number?`Page ${x.page_number}`:'Lesson'));const range=(x.ayah_from||x.ayah_to)?` · Ayah ${x.ayah_from||''}-${x.ayah_to||''}`:'';return `<li><b>${esc(x.track)}</b> · ${esc(portion)}${esc(range)}<br>${x.completion_percent==null?'':`Progress: ${esc(x.completion_percent)}% · `}${esc(x.next_target||'')}</li>`;}).join('')||'<li>No Quran progress yet.</li>';
-const charges=fc.data||[];const totalDue=charges.reduce((sum,x)=>sum+Math.max(0,Number(x.current_payable||0)),0);const openCharges=charges.filter(x=>x.status!=='paid').length;const payments=fp.data||[];const totalPaid=payments.reduce((sum,x)=>sum+Number(x.amount||0),0);$('totalDue').textContent=money(totalDue);$('openChargeCount').textContent=String(openCharges);$('totalPaid').textContent=money(totalPaid);$('fees').innerHTML=charges.slice(0,6).map(x=>`<li><b>${esc(x.billing_month)}</b><br>Payable: ${esc(money(x.current_payable))} · <span class="active-badge ${statusClass(x.status)}">${esc(x.status)}</span>${x.due_date?`<br><span class="muted">Due: ${esc(formatDate(x.due_date))}</span>`:''}</li>`).join('')||'<li>No fee record yet.</li>';
-$('paymentRows').innerHTML=payments.map(x=>`<tr><td>${esc(x.receipt_no)}</td><td>${esc(x.paid_at?new Date(x.paid_at).toLocaleDateString('en-GB'):'')}</td><td>${esc(money(x.amount))}</td><td>${esc(x.payment_method)}</td></tr>`).join('')||'<tr><td colspan="4">No payment record.</td></tr>';
-const notes=[];enrollments.filter(x=>x.notes).slice(0,3).forEach(x=>notes.push(`${x.course_code}: ${x.notes}`));(qr.data||[]).slice(0,5).forEach(x=>{if(x.teacher_note)notes.push(`Quran: ${x.teacher_note}`);if(x.next_target)notes.push(`Next target: ${x.next_target}`);});sessionRows.filter(x=>x.homework).slice(0,3).forEach(x=>notes.push(`Homework (${x.course_code}): ${x.homework}`));$('notes').innerHTML=notes.length?notes.map(x=>`<div>${esc(x)}</div>`).join(''):'No new notes.';
-$('exitPreview')?.addEventListener('click',()=>location.href='dashboard.html');$('signOut').addEventListener('click',async()=>{await supabase.auth.signOut();location.replace('./');});$('loading').classList.add('hidden');$('app').classList.remove('hidden');}
-init().catch(e=>{console.error(e);if(e.message==='PREVIEW_NOT_ALLOWED'){location.replace('./');return}$('loading').textContent='Portal load করা যায়নি।';});
+
+const c = window.QURANER_ALO_CONFIG;
+const supabase = createClient(c.supabaseUrl, c.supabasePublishableKey, {
+  auth: { autoRefreshToken: true, persistSession: true }
+});
+const $ = (id) => document.getElementById(id);
+
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (ch) => ({
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#039;'
+}[ch]));
+
+function statusClass(value) {
+  const v = String(value || '').toLowerCase();
+  if (['active', 'present', 'paid', 'scheduled', 'completed'].includes(v)) return 'on';
+  if (['absent', 'inactive', 'overdue', 'cancelled'].includes(v)) return 'off';
+  return '';
+}
+
+function money(value) {
+  return `৳${Number(value || 0).toLocaleString('en-BD', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
+}
+
+function formatDate(value) {
+  return value
+    ? new Date(`${value}T00:00:00`).toLocaleDateString('en-GB')
+    : '—';
+}
+
+function formatDateTime(value) {
+  return value
+    ? new Date(value).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
+    : '—';
+}
+
+function safeLink(url, label = 'Join class') {
+  if (!url) return '';
+  try {
+    const u = new URL(url);
+    if (!['http:', 'https:'].includes(u.protocol)) return '';
+    return `<a class="quick-link" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`;
+  } catch {
+    return '';
+  }
+}
+
+async function getViewerProfile(session) {
+  const { data, error } = await supabase
+    .from('qa_users')
+    .select('role,active')
+    .eq('user_id', session.user.id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+async function resolveStudent(session) {
+  const previewId = new URLSearchParams(window.location.search).get('preview_student');
+  const viewer = await getViewerProfile(session);
+
+  if (previewId) {
+    if (!viewer || !viewer.active || viewer.role !== 'owner') {
+      throw new Error('PREVIEW_NOT_ALLOWED');
+    }
+
+    const { data, error } = await supabase.functions.invoke('portal-preview', {
+      body: { entityType: 'student', entityId: previewId }
+    });
+
+    if (error) throw error;
+    if (!data?.ok || data.entityType !== 'student' || !data.entity) {
+      throw new Error(data?.error || 'PREVIEW_NOT_FOUND');
+    }
+
+    const previewStudent = data.entity;
+    $('previewBanner').classList.remove('hidden');
+    $('previewText').textContent =
+      `Read-only preview · ${previewStudent.student_code} · ${previewStudent.full_name}`;
+    $('loginId').textContent = previewStudent.student_code;
+    $('signOut').textContent = 'Exit Preview';
+    return previewStudent;
+  }
+
+  const { data, error } = await supabase
+    .from('qa_students')
+    .select('student_id,student_code,full_name,status,phone,email')
+    .eq('user_id', session.user.id)
+    .maybeSingle();
+
+  if (error || !data) {
+    throw error || new Error('STUDENT_PROFILE_NOT_FOUND');
+  }
+
+  return data;
+}
+
+async function init() {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    location.replace('./');
+    return;
+  }
+
+  const student = await resolveStudent(session);
+
+  if (student.status !== 'active') {
+    await supabase.auth.signOut();
+    location.replace('./');
+    return;
+  }
+
+  $('loginId').textContent = student.student_code;
+  $('studentName').textContent = student.full_name;
+  $('studentCode').textContent = student.student_code;
+  $('studentStatus').textContent = student.status;
+
+  const [
+    enrollmentResult,
+    guardianLinkResult,
+    attendanceResult,
+    quranResult,
+    feeChargeResult,
+    feePaymentResult
+  ] = await Promise.all([
+    supabase
+      .from('qa_enrollments')
+      .select('course_code,start_date,end_date,status,teacher_user_id,notes')
+      .eq('student_id', student.student_id)
+      .order('start_date', { ascending: false }),
+    supabase
+      .from('qa_student_guardians')
+      .select('guardian_id,is_primary')
+      .eq('student_id', student.student_id),
+    supabase
+      .from('qa_attendance')
+      .select('attendance_date,status,remarks')
+      .eq('student_id', student.student_id)
+      .order('attendance_date', { ascending: false })
+      .limit(12),
+    supabase
+      .from('qa_quran_progress')
+      .select('lesson_date,track,surah_name,juz_number,ayah_from,ayah_to,page_number,sabaq,sabqi,manzil,completion_percent,teacher_note,next_target,teacher_id')
+      .eq('student_id', student.student_id)
+      .order('lesson_date', { ascending: false })
+      .limit(12),
+    supabase
+      .from('qa_fee_charges')
+      .select('billing_month,expected_amount,discount,previous_due,current_payable,due_date,status')
+      .eq('student_id', student.student_id)
+      .order('billing_month', { ascending: false })
+      .limit(12),
+    supabase
+      .from('qa_fee_payments')
+      .select('receipt_no,paid_at,amount,payment_method')
+      .eq('student_id', student.student_id)
+      .order('paid_at', { ascending: false })
+      .limit(12)
+  ]);
+
+  for (const result of [
+    enrollmentResult,
+    guardianLinkResult,
+    attendanceResult,
+    quranResult,
+    feeChargeResult,
+    feePaymentResult
+  ]) {
+    if (result.error) throw result.error;
+  }
+
+  const enrollments = enrollmentResult.data || [];
+  const guardianLinks = guardianLinkResult.data || [];
+  const attendance = attendanceResult.data || [];
+  const quranProgress = quranResult.data || [];
+  const charges = feeChargeResult.data || [];
+  const payments = feePaymentResult.data || [];
+
+  const guardianIds = guardianLinks.map((x) => x.guardian_id).filter(Boolean);
+  let guardianMap = {};
+
+  if (guardianIds.length) {
+    const { data, error } = await supabase
+      .from('qa_guardians')
+      .select('guardian_id,full_name,relation,phone,email,address')
+      .in('guardian_id', guardianIds);
+
+    if (error) throw error;
+    guardianMap = Object.fromEntries((data || []).map((x) => [x.guardian_id, x]));
+  }
+
+  const teacherUserIds = [
+    ...new Set(enrollments.map((x) => x.teacher_user_id).filter(Boolean))
+  ];
+  let teacherMap = {};
+
+  if (teacherUserIds.length) {
+    const { data, error } = await supabase
+      .from('qa_teachers')
+      .select('user_id,teacher_code,full_name,full_name_bn,phone,specialization')
+      .in('user_id', teacherUserIds);
+
+    if (error) throw error;
+    teacherMap = Object.fromEntries((data || []).map((x) => [x.user_id, x]));
+  }
+
+  let sessionRows = [];
+  const courseCodes = [
+    ...new Set(
+      enrollments
+        .filter((x) => x.status === 'active')
+        .map((x) => x.course_code)
+        .filter(Boolean)
+    )
+  ];
+
+  if (courseCodes.length) {
+    const { data, error } = await supabase
+      .from('qa_class_sessions')
+      .select('session_id,teacher_id,course_code,session_date,starts_at,ends_at,mode,meeting_link,topic,quran_portion,homework,status,notes')
+      .in('course_code', courseCodes)
+      .order('session_date', { ascending: true })
+      .limit(20);
+
+    if (error) throw error;
+    sessionRows = data || [];
+  }
+
+  $('guardians').innerHTML = guardianLinks.map((link) => {
+    const guardian = guardianMap[link.guardian_id];
+    if (!guardian) return '';
+
+    return `
+      <div class="portal-stat">
+        <small>${esc(guardian.relation || 'Guardian')}${link.is_primary ? ' · Primary' : ''}</small>
+        <strong>${esc(guardian.full_name)}</strong>
+        <span class="muted">${esc(guardian.phone || '')}</span>
+        ${guardian.email ? `<span class="muted">${esc(guardian.email)}</span>` : ''}
+        ${guardian.address ? `<span class="muted">${esc(guardian.address)}</span>` : ''}
+      </div>
+    `;
+  }).join('') || '<p class="portal-note">Guardian information has not been added yet.</p>';
+
+  $('enrollments').innerHTML = enrollments.map((item) => {
+    const teacher = teacherMap[item.teacher_user_id];
+
+    return `
+      <div class="portal-stat">
+        <small>
+          ${esc(item.course_code)}
+          · <span class="active-badge ${statusClass(item.status)}">${esc(item.status)}</span>
+        </small>
+        <strong>${esc(teacher?.full_name || 'Teacher not assigned')}</strong>
+        ${teacher?.specialization ? `<span class="muted">${esc(teacher.specialization)}</span>` : ''}
+        <span class="muted">Start: ${esc(item.start_date || '—')} · End: ${esc(item.end_date || '—')}</span>
+        ${item.notes ? `<span class="muted">${esc(item.notes)}</span>` : ''}
+      </div>
+    `;
+  }).join('') || '<p class="portal-note">No enrollment found.</p>';
+
+  const upcoming = sessionRows
+    .filter((item) => {
+      if (item.status === 'cancelled') return false;
+      if (item.starts_at) return new Date(item.starts_at) >= new Date();
+      return new Date(`${item.session_date}T23:59:59`) >= new Date();
+    })
+    .slice(0, 6);
+
+  $('scheduleRows').innerHTML = upcoming.map((item) => {
+    const endTime = item.ends_at
+      ? ` – ${new Date(item.ends_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+      : '';
+
+    return `
+      <tr>
+        <td>${esc(formatDate(item.session_date))}</td>
+        <td>${esc(item.starts_at ? formatDateTime(item.starts_at).split(', ').pop() : '—')}${esc(endTime)}</td>
+        <td>${esc(item.course_code)}</td>
+        <td>${esc(item.topic || 'Class')}</td>
+        <td>${esc(item.mode || 'online')}</td>
+        <td>${safeLink(item.meeting_link)}</td>
+      </tr>
+    `;
+  }).join('') || '<tr><td colspan="6">No upcoming class scheduled.</td></tr>';
+
+  $('presentCount').textContent = String(attendance.filter((x) => x.status === 'present').length);
+  $('absentCount').textContent = String(attendance.filter((x) => x.status === 'absent').length);
+  $('otherAttendanceCount').textContent =
+    String(attendance.filter((x) => !['present', 'absent'].includes(x.status)).length);
+
+  $('attendanceRows').innerHTML = attendance.map((item) => `
+    <tr>
+      <td>${esc(formatDate(item.attendance_date))}</td>
+      <td><span class="active-badge ${statusClass(item.status)}">${esc(item.status)}</span></td>
+      <td>${esc(item.remarks || '')}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="3">No attendance record.</td></tr>';
+
+  $('quran').innerHTML = quranProgress.map((item) => {
+    let portion = 'Lesson';
+
+    if (item.surah_name) portion = item.surah_name;
+    else if (item.juz_number) portion = `Juz ${item.juz_number}`;
+    else if (item.page_number) portion = `Page ${item.page_number}`;
+
+    const range = item.ayah_from || item.ayah_to
+      ? ` · Ayah ${item.ayah_from || ''}-${item.ayah_to || ''}`
+      : '';
+
+    const progressText = item.completion_percent == null
+      ? ''
+      : `Progress: ${item.completion_percent}% · `;
+
+    return `
+      <li>
+        <b>${esc(item.track)}</b> · ${esc(portion)}${esc(range)}<br>
+        ${esc(progressText)}${esc(item.next_target || '')}
+      </li>
+    `;
+  }).join('') || '<li>No Quran progress yet.</li>';
+
+  const totalDue = charges.reduce(
+    (sum, item) => sum + Math.max(0, Number(item.current_payable || 0)),
+    0
+  );
+  const openCharges = charges.filter((item) => item.status !== 'paid').length;
+  const totalPaid = payments.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+  $('totalDue').textContent = money(totalDue);
+  $('openChargeCount').textContent = String(openCharges);
+  $('totalPaid').textContent = money(totalPaid);
+
+  $('fees').innerHTML = charges.slice(0, 6).map((item) => `
+    <li>
+      <b>${esc(item.billing_month)}</b><br>
+      Payable: ${esc(money(item.current_payable))}
+      · <span class="active-badge ${statusClass(item.status)}">${esc(item.status)}</span>
+      ${item.due_date ? `<br><span class="muted">Due: ${esc(formatDate(item.due_date))}</span>` : ''}
+    </li>
+  `).join('') || '<li>No fee record yet.</li>';
+
+  $('paymentRows').innerHTML = payments.map((item) => `
+    <tr>
+      <td>${esc(item.receipt_no)}</td>
+      <td>${esc(item.paid_at ? new Date(item.paid_at).toLocaleDateString('en-GB') : '')}</td>
+      <td>${esc(money(item.amount))}</td>
+      <td>${esc(item.payment_method)}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="4">No payment record.</td></tr>';
+
+  const notes = [];
+
+  enrollments
+    .filter((item) => item.notes)
+    .slice(0, 3)
+    .forEach((item) => notes.push(`${item.course_code}: ${item.notes}`));
+
+  quranProgress.slice(0, 5).forEach((item) => {
+    if (item.teacher_note) notes.push(`Quran: ${item.teacher_note}`);
+    if (item.next_target) notes.push(`Next target: ${item.next_target}`);
+  });
+
+  sessionRows
+    .filter((item) => item.homework)
+    .slice(0, 3)
+    .forEach((item) => notes.push(`Homework (${item.course_code}): ${item.homework}`));
+
+  $('notes').innerHTML = notes.length
+    ? notes.map((note) => `<div>${esc(note)}</div>`).join('')
+    : 'No new notes.';
+
+  $('exitPreview')?.addEventListener('click', () => {
+    location.href = 'dashboard.html';
+  });
+
+  $('signOut').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    location.replace('./');
+  });
+
+  $('loading').classList.add('hidden');
+  $('app').classList.remove('hidden');
+}
+
+init().catch((error) => {
+  console.error('student portal error', error);
+
+  if (error.message === 'PREVIEW_NOT_ALLOWED') {
+    location.replace('./');
+    return;
+  }
+
+  $('loading').textContent = 'Portal load করা যায়নি।';
+});
