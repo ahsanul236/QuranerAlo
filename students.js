@@ -53,14 +53,14 @@ function renderStudents(list) {
       <td><span class="active-badge ${s.status === 'active' ? 'on' : 'off'}">${escapeHtml(s.status)}</span></td>
       <td>${activationBadge(s.user_id)}</td>
       <td>${portalAction(s)}</td>
-    </tr>`).join('') || '<tr><td colspan="7">কোনো শিক্ষার্থী পাওয়া যায়নি।</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="6">কোনো শিক্ষার্থী পাওয়া যায়নি।</td></tr>';
   bindPortalActions();
 }
 
 async function loadStudents() {
   const { data, error } = await supabase
     .from('qa_students')
-    .select('student_id,student_code,full_name,phone,admission_date,status,user_id,email')
+    .select('student_id,student_code,full_name,admission_date,status,user_id,email')
     .order('created_at', { ascending: false });
   if (error) throw error;
   allStudents = data || [];
