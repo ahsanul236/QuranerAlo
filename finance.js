@@ -17,7 +17,6 @@ function updateView(){
   const target=currentView==='income'?'incomeView':currentView==='expense'?'expenseView':'vouchersView';
   $(target)?.classList.add('is-active');
   $('brandSubtitle').textContent=currentView==='income'?'Income Management':currentView==='expense'?'Expense Management':'Voucher Management';
-  $('financeSummary')?.classList.toggle('hidden',currentView==='vouchers');
   setFormEnabled('financeForm',currentView==='income'&&canFinanceManage);
   setFormEnabled('expenseForm',currentView==='expense'&&canFinanceManage);
   setFormEnabled('voucherForm',currentView==='vouchers'&&canVoucherManage);
@@ -39,14 +38,11 @@ async function loadTransactions(){
   const renderRows=rows=>rows.map(x=>'<tr><td>'+esc(x.transaction_date)+'</td><td>'+esc(x.category)+'</td><td>৳'+money(x.amount)+'</td><td>'+esc(x.account_name)+'</td><td>'+esc(x.reference||'—')+'</td><td>'+voucherLink(vouchers[x.transaction_id])+'</td></tr>').join('');
   $('incomeRows').innerHTML=renderRows(income)||'<tr><td colspan="6">কোনো Income record পাওয়া যায়নি।</td></tr>';
   $('expenseRows').innerHTML=renderRows(expense)||'<tr><td colspan="6">কোনো Expense record পাওয়া যায়নি।</td></tr>';
-  const totalIncome=income.reduce((a,x)=>a+Number(x.amount||0),0),totalExpense=expense.reduce((a,x)=>a+Number(x.amount||0),0);
-  $('incomeTotal').textContent='৳'+money(totalIncome);$('expenseTotal').textContent='৳'+money(totalExpense);$('netTotal').textContent='৳'+money(totalIncome-totalExpense);
 }
 async function loadVouchers(){
   if(!canVoucherView){
     voucherRecords=[];
     $('voucherRows').innerHTML='<tr><td colspan="8">No permission.</td></tr>';
-    $('voucherTotal').textContent='—';
     $('voucherCount').textContent='—';
     $('voucherSearchSummary').textContent='Voucher view permission নেই।';
     return;
@@ -79,7 +75,6 @@ function renderVoucherRows(){
     return haystack.includes(search);
   });
 
-  $('voucherTotal').textContent=voucherRecords.length;
   $('voucherCount').textContent=filtered.length+' of '+voucherRecords.length+' vouchers';
   $('voucherSearchSummary').textContent=filtered.length===voucherRecords.length
     ? 'সব Voucher দেখানো হচ্ছে'
