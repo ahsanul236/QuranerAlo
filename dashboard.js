@@ -107,7 +107,7 @@
   }
 
   function money(value) {
-    return \`৳ \${Number(value || 0).toLocaleString('en-BD', { maximumFractionDigits: 0 })}\`;
+    return `৳ ${Number(value || 0).toLocaleString('en-BD', { maximumFractionDigits: 0 })}`;
   }
 
   async function loadFinanceRows() {
@@ -130,7 +130,7 @@
 
   async function loadMetrics() {
     const today = localDateISO();
-    const monthStart = \`\${today.slice(0, 7)}-01\`;
+    const monthStart = `${today.slice(0, 7)}-01`;
     const [s, sa, t, ta, h, ha, a, d] = await Promise.all([
       countRows('qa_students'), countRows('qa_students', (q) => q.not('user_id', 'is', null)),
       countRows('qa_teachers'), countRows('qa_teachers', (q) => q.not('user_id', 'is', null)),
@@ -147,13 +147,13 @@
     $('attendanceCount').textContent = a;
     $('feesDue').textContent = money((d.data || []).reduce((sum, row) => sum + Number(row.current_payable || 0), 0));
     $('portalActivatedCount').textContent = sa + ta + ha;
-    $('portalActivationMeta').textContent = \`Student \${sa}/\${s} · Teacher \${ta}/\${t} · Helper \${ha}/\${h}\`;
-    $('studentActivationSummary').textContent = \`\${sa} / \${s}\`;
-    $('studentActivationHint').textContent = s ? \`\${s - sa} জন এখনো activate করেনি\` : 'কোনো student নেই';
-    $('teacherActivationSummary').textContent = \`\${ta} / \${t}\`;
-    $('teacherActivationHint').textContent = t ? \`\${t - ta} জন এখনো activate করেনি\` : 'কোনো teacher নেই';
-    $('helperActivationSummary').textContent = \`\${ha} / \${h}\`;
-    $('helperActivationHint').textContent = h ? \`\${h - ha} জন এখনো activate করেনি\` : 'কোনো helper নেই';
+    $('portalActivationMeta').textContent = `Student ${sa}/${s} · Teacher ${ta}/${t} · Helper ${ha}/${h}`;
+    $('studentActivationSummary').textContent = `${sa} / ${s}`;
+    $('studentActivationHint').textContent = s ? `${s - sa} জন এখনো activate করেনি` : 'কোনো student নেই';
+    $('teacherActivationSummary').textContent = `${ta} / ${t}`;
+    $('teacherActivationHint').textContent = t ? `${t - ta} জন এখনো activate করেনি` : 'কোনো teacher নেই';
+    $('helperActivationSummary').textContent = `${ha} / ${h}`;
+    $('helperActivationHint').textContent = h ? `${h - ha} জন এখনো activate করেনি` : 'কোনো helper নেই';
 
     const financeRows = await loadFinanceRows();
     if (!financeRows) {
@@ -348,7 +348,7 @@
 
     const optional = async (fn, target, label) => {
       try { await fn(); }
-      catch (error) { console.error(label, error); if (target) message(target, \`\${label} load করা যায়নি।\`, 'error'); }
+      catch (error) { console.error(label, error); if (target) message(target, `${label} load করা যায়নি।`, 'error'); }
     };
 
     void optional(loadMetrics, null, 'Dashboard metrics');
