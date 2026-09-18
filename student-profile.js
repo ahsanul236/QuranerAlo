@@ -32,7 +32,7 @@ function guardianHtml(g){
   const dis=!(editing&&access?.can('guardians.manage'));
   const relation=g.relation==='Guardian'?'Other':(g.relation||'Other');
   const selectedOther=relation==='Other';
-  return `<div class="guardian-card"><div class="guardian-title"><strong>${g.is_primary?'প্রধান Guardian':'Guardian'}</strong><span class="readonly-badge">${esc(relation)}</span></div><div class="profile-fields">
+  return `<div class="guardian-card"><div class="guardian-title"><strong>${g.is_primary?'প্রধান Guardian':'Guardian'}</strong><span class="readonly-badge">${esc(relation)}</span></div>${editing&&access?.can('guardians.manage') ? `<label class="primary-guardian-toggle"><input type="radio" name="primaryGuardian" value="${esc(g.guardian_id)}" ${g.is_primary?'checked':''}> প্রধান Guardian হিসেবে সেট করুন</label>` : ''}<div class="profile-fields">
   <div class="profile-field"><label>পূর্ণ নাম</label><input data-g-field="full_name" data-g-id="${esc(g.guardian_id)}" value="${esc(g.full_name)}" ${dis?'disabled':''}></div>
   <div class="profile-field"><label>Guardian হিসেবে</label><select data-g-field="relation" data-g-id="${esc(g.guardian_id)}" ${dis?'disabled':''}><option value="">নির্বাচন করুন</option><option value="Father" ${relation==='Father'?'selected':''}>Father</option><option value="Mother" ${relation==='Mother'?'selected':''}>Mother</option><option value="Other" ${selectedOther?'selected':''}>Other</option></select></div>
   <div class="profile-field"><label>ফোন</label><input data-g-field="phone" data-g-id="${esc(g.guardian_id)}" value="${esc(g.phone)}" ${dis?'disabled':''}></div>
@@ -77,11 +77,15 @@ async function save(){
   if(!payload.full_name)throw new Error('Student-এর নাম দিতে হবে।');
   const {data,error}=await supabase.from('qa_students').update(payload).eq('student_id',studentId).select('student_id,student_code,full_name,gender,date_of_birth,admission_date,status,notes,father_name,father_nid,mother_name,mother_nid,birth_registration_no,user_id,created_at,updated_at').single();
   if(error)throw error;student=data;
-  if(access.can('guardians.manage'))for(const g of guardians){
-    const q=s=>document.querySelector(`[data-g-field="${s}"][data-g-id="${CSS.escape(g.guardian_id)}"]`);
-    const update={full_name:q('full_name')?.value.trim()||'',relation:q('relation')?.value||'',phone:q('phone')?.value.trim()||'',email:q('email')?.value.trim()||'',address:q('address')?.value.trim()||''};
-    if(!update.full_name||!update.relation)throw new Error('Guardian-এর নাম ও সম্পর্ক পূরণ করতে হবে।');
-    const {error:ge}=await supabase.from('qa_guardians').update(update).eq('guardian_id',g.guardian_id);if(ge)throw ge;
+  if(access.can('guardians.manage')){
+    const selectedPrimary=document.querySelector('input[name="primaryGuardian"]:checked')?.value||guardians.find(g=>g.is_primary)?.guardian_id||'';
+    for(const g of guardians){
+      const q=s=>document.querySelector(`[data-g-field="${s}"][data-g-id="${CSS.escape(g.guardian_id)}"]`);
+      const update={full_name:q('full_name')?.value.trim()||'',relation:q('relation')?.value||'',phone:q('phone')?.value.trim()||'',email:q('email')?.value.trim()||'',address:q('address')?.value.trim()||''};
+      if(!update.full_name||!update.relation)throw new Error('Guardian-এর নাম ও সম্পর্ক পূরণ করতে হবে।');
+      const {error:ge}=await supabase.from('qa_guardians').update(update).eq('guardian_id',g.guardian_id);if(ge)throw ge;
+      const {error:gle}=await supabase.from('qa_student_guardians').update({is_primary:g.guardian_id===selectedPrimary}).eq('student_id',studentId).eq('guardian_id',g.guardian_id);if(gle)throw gle;
+    }
   }
   editing=false;await load();
 }
