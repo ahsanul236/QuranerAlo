@@ -162,22 +162,22 @@
       sections.push(card('Students', `<div class="big">${total}</div><table><tr><td>Active</td><td>${active}</td></tr><tr><td>Portal activated</td><td>${portal}</td></tr><tr><td>Not activated</td><td>${Math.max(0, total - portal)}</td></tr></table>`));
     }
 
-    if (access.can('attendance.view') || access.can('attendance.manage')) {
-      const today = localDateISO();
-      const monthStart = today.slice(0, 7) + '-01';
-      const [todayCount, monthCount] = await Promise.all([
-        countRows('qa_attendance', q => q.eq('attendance_date', today)),
-        countRows('qa_attendance', q => q.gte('attendance_date', monthStart))
+    if (access.can('teachers.view') || access.can('teachers.manage')) {
+      const [total, active, portal] = await Promise.all([
+        countRows('qa_teachers'),
+        countRows('qa_teachers', q => q.eq('active', true)),
+        countRows('qa_teachers', q => q.not('user_id', 'is', null))
       ]);
-      sections.push(card('Attendance', `<div class="big">${monthCount}</div><table><tr><td>Today</td><td>${todayCount}</td></tr><tr><td>This month</td><td>${monthCount}</td></tr></table>`));
+      sections.push(card('Teacher', `<div class="big">${total}</div><table><tr><td>Active</td><td>${active}</td></tr><tr><td>Portal activated</td><td>${portal}</td></tr><tr><td>Not activated</td><td>${Math.max(0, total - portal)}</td></tr></table>`));
     }
 
-    if (access.can('quran.view') || access.can('quran.manage')) {
-      const { data, error } = await client.from('qa_quran_progress').select('lesson_date,track,completion_percent,next_target').order('lesson_date', { ascending: false }).limit(10);
-      if (error) throw error;
-      const rows = data || [];
-      const avg = rows.length ? rows.reduce((sum, x) => sum + Number(x.completion_percent || 0), 0) / rows.length : 0;
-      sections.push(card('Quran Progress', `<div class="big">${Math.round(avg)}%</div><table><tr><td>Recent entries</td><td>${rows.length}</td></tr><tr><td>Latest track</td><td>${esc(rows[0]?.track || '—')}</td></tr><tr><td>Next target</td><td>${esc(rows[0]?.next_target || '—')}</td></tr></table>`));
+    if (access.can('staff.view') || access.can('staff.manage')) {
+      const [total, active, portal] = await Promise.all([
+        countRows('qa_staff', q => q.eq('staff_type', 'helper')),
+        countRows('qa_staff', q => q.eq('staff_type', 'helper').eq('active', true)),
+        countRows('qa_staff', q => q.eq('staff_type', 'helper').not('user_id', 'is', null))
+      ]);
+      sections.push(card('Helper', `<div class="big">${total}</div><table><tr><td>Active</td><td>${active}</td></tr><tr><td>Portal activated</td><td>${portal}</td></tr><tr><td>Not activated</td><td>${Math.max(0, total - portal)}</td></tr></table>`));
     }
 
     if (access.can('fees.view') || access.can('fees.manage')) {
