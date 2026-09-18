@@ -16,7 +16,7 @@ function updateView(){
   document.querySelectorAll('.finance-view').forEach(el=>el.classList.remove('is-active'));
   const target=currentView==='income'?'incomeView':currentView==='expense'?'expenseView':'vouchersView';
   $(target)?.classList.add('is-active');
-  $('brandSubtitle').textContent=currentView==='income'?'Income Management':currentView==='expense'?'Expense Management':'Voucher Management';
+  $('brandSubtitle').textContent=currentView==='income'?'আয় ব্যবস্থাপনা':currentView==='expense'?'ব্যয় ব্যবস্থাপনা':'ভাউচার ব্যবস্থাপনা';
   setFormEnabled('financeForm',currentView==='income'&&canFinanceManage);
   setFormEnabled('expenseForm',currentView==='expense'&&canFinanceManage);
   setFormEnabled('voucherForm',currentView==='vouchers'&&canVoucherManage);
