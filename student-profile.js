@@ -16,10 +16,14 @@ function fillStudent(){
   $('fullName').value=student.full_name||'';
   $('gender').value=['male','female','unspecified'].includes(student.gender)?student.gender:'unspecified';
   $('dateOfBirth').value=student.date_of_birth||'';
-  $('email').value=student.email||'';
   $('admissionDate').value=student.admission_date||'';
   $('status').value=['active','inactive','graduated','suspended','withdrawn'].includes(student.status)?student.status:'active';
   $('notes').value=student.notes||'';
+  $('fatherName').value=student.father_name||'';
+  $('fatherNid').value=student.father_nid||'';
+  $('motherName').value=student.mother_name||'';
+  $('motherNid').value=student.mother_nid||'';
+  $('birthRegistrationNo').value=student.birth_registration_no||'';
   $('profileTitle').textContent=student.full_name||'শিক্ষার্থী প্রোফাইল';
   $('profileSubtitle').textContent=`Student ID: ${student.student_code||'—'} · Status: ${String(student.status||'').replaceAll('_',' ')}`;
 }
@@ -39,7 +43,7 @@ function renderGuardians(){
 }
 function mode(){
   const se=editing&&access?.can('students.manage'), ge=editing&&access?.can('guardians.manage');
-  ['fullName','gender','dateOfBirth','email','admissionDate','status','notes'].forEach(id=>$(id).disabled=!se);
+  ['fullName','gender','dateOfBirth','admissionDate','status','notes','fatherName','fatherNid','motherName','motherNid','birthRegistrationNo'].forEach(id=>$(id).disabled=!se);
   $('editBadge').textContent=se?'Edit mode':'View mode';
   $('guardianPermissionBadge').textContent=ge?'Edit mode':'View mode';
   $('editBtn').classList.toggle('hidden',editing||!access?.can('students.manage'));$('removeBtn').classList.toggle('hidden',editing||!access?.can('students.manage'));
@@ -51,7 +55,7 @@ function mode(){
 
 async function load(){
   if(!studentId)throw new Error('Student ID সঠিক নয়।');
-  const {data:s,error}=await supabase.from('qa_students').select('student_id,student_code,full_name,gender,date_of_birth,email,admission_date,status,notes,user_id,created_at,updated_at').eq('student_id',studentId).maybeSingle();
+  const {data:s,error}=await supabase.from('qa_students').select('student_id,student_code,full_name,gender,date_of_birth,admission_date,status,notes,father_name,father_nid,mother_name,mother_nid,birth_registration_no,user_id,created_at,updated_at').eq('student_id',studentId).maybeSingle();
   if(error)throw error;if(!s)throw new Error('Student profile পাওয়া যায়নি।');student=s;
   const {data:links,error:le}=await supabase.from('qa_student_guardians').select('guardian_id,is_primary').eq('student_id',studentId);
   if(le)throw le;
@@ -67,7 +71,7 @@ async function load(){
 
 async function save(){
   if(!access?.can('students.manage'))throw new Error('Student edit permission নেই।');
-  const payload={full_name:$('fullName').value.trim(),gender:$('gender').value,date_of_birth:$('dateOfBirth').value||null,email:$('email').value.trim(),admission_date:$('admissionDate').value||null,status:$('status').value,notes:$('notes').value.trim()};
+  const payload={full_name:$('fullName').value.trim(),gender:$('gender').value,date_of_birth:$('dateOfBirth').value||null,admission_date:$('admissionDate').value||null,status:$('status').value,notes:$('notes').value.trim(),father_name:$('fatherName').value.trim(),father_nid:$('fatherNid').value.trim(),mother_name:$('motherName').value.trim(),mother_nid:$('motherNid').value.trim(),birth_registration_no:$('birthRegistrationNo').value.trim()};
   if(!payload.full_name)throw new Error('Student-এর নাম দিতে হবে।');
   const {data,error}=await supabase.from('qa_students').update(payload).eq('student_id',studentId).select('student_id,student_code,full_name,gender,date_of_birth,email,admission_date,status,notes,user_id,created_at,updated_at').single();
   if(error)throw error;student=data;
