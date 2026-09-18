@@ -105,3 +105,23 @@
   .page-head h1{font-size:28px}
   .page-head>.tools .primary-btn{width:100%}
 }
+/* Global management surface palette — visual-only, no feature behavior changes */
+.management-layout .dashboard-card{
+  background:#e5f0fb;
+}
+.management-layout .dashboard-card > #loading,
+.management-layout .dashboard-card > #app{
+  background:transparent;
+}
+.management-layout input:not([type="checkbox"]):not([type="radio"]),
+.management-layout select,
+.management-layout textarea{
+  background:#e5f0fb;
+}
+.management-layout .user-table input:not([type="checkbox"]):not([type="radio"]),
+.management-layout .user-table select{
+  background:#e5f0fb;
+}
+.management-layout .voucher-search-panel{
+  background:#e5f0fb;
+}
