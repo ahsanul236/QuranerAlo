@@ -28,6 +28,7 @@
     if (path === 'school-profile.html') return 'settings';
     return ({
       'students.html': 'students',
+      'student-profile.html': 'students',
       'fees.html': 'fees',
       'attendance.html': 'attendance',
       'quran.html': 'quran',
