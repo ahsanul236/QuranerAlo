@@ -50,18 +50,18 @@
 
     const sidebar = document.createElement('aside');
     sidebar.className = 'management-sidebar';
-    sidebar.innerHTML = \`
+    sidebar.innerHTML = `
       <div class="sidebar-scroll">
         <div class="sidebar-title">Management</div>
         <nav aria-label="Management navigation">
-          \${items.map(([label, href, key, icon]) => \`
-            <a class="management-nav-link" data-nav-key="\${key}" href="\${href}">
-              <span class="nav-icon" aria-hidden="true">\${icon}</span>
-              <span>\${label}</span>
-            </a>\`).join('')}
+          ${items.map(([label, href, key, icon]) => `
+            <a class="management-nav-link" data-nav-key="${key}" href="${href}">
+              <span class="nav-icon" aria-hidden="true">${icon}</span>
+              <span>${label}</span>
+            </a>`).join('')}
         </nav>
       </div>
-    \`;
+    `;
     document.body.appendChild(sidebar);
 
     const toggle = document.createElement('button');
