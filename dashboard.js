@@ -183,6 +183,68 @@
     $('overallNet').classList.toggle('finance-negative', overallNet < 0);
   }
 
+  async function loadOverviewReports() {
+    const grid = $('overviewReportGrid');
+    if (!grid) return;
+    const card = (title, body) => `<section class="overview-report-card"><h3>${title}</h3>${body}</section>`;
+    const moneyLocal = (v) => money(v);
+    const sections = [];
+
+    if (access.can('students.view') || access.can('students.manage')) {
+      const [total, active, portal] = await Promise.all([
+        countRows('qa_students'),
+        countRows('qa_students', q => q.eq('status', 'active')),
+        countRows('qa_students', q => q.not('user_id', 'is', null))
+      ]);
+      sections.push(card('Students', `<div class="big">${total}</div><table><tr><td>Active</td><td>${active}</td></tr><tr><td>Portal activated</td><td>${portal}</td></tr><tr><td>Not activated</td><td>${Math.max(0, total - portal)}</td></tr></table>`));
+    }
+
+    if (access.can('attendance.view') || access.can('attendance.manage')) {
+      const today = localDateISO();
+      const monthStart = today.slice(0, 7) + '-01';
+      const [todayCount, monthCount] = await Promise.all([
+        countRows('qa_attendance', q => q.eq('attendance_date', today)),
+        countRows('qa_attendance', q => q.gte('attendance_date', monthStart))
+      ]);
+      sections.push(card('Attendance', `<div class="big">${monthCount}</div><table><tr><td>Today</td><td>${todayCount}</td></tr><tr><td>This month</td><td>${monthCount}</td></tr></table>`));
+    }
+
+    if (access.can('quran.view') || access.can('quran.manage')) {
+      const { data, error } = await client.from('qa_quran_progress').select('lesson_date,track,completion_percent,next_target').order('lesson_date', { ascending: false }).limit(10);
+      if (error) throw error;
+      const rows = data || [];
+      const avg = rows.length ? rows.reduce((sum, x) => sum + Number(x.completion_percent || 0), 0) / rows.length : 0;
+      sections.push(card('Quran Progress', `<div class="big">${Math.round(avg)}%</div><table><tr><td>Recent entries</td><td>${rows.length}</td></tr><tr><td>Latest track</td><td>${esc(rows[0]?.track || '—')}</td></tr><tr><td>Next target</td><td>${esc(rows[0]?.next_target || '—')}</td></tr></table>`));
+    }
+
+    if (access.can('fees.view') || access.can('fees.manage')) {
+      const { data, error } = await client.from('qa_fee_charges').select('current_payable,status').neq('status', 'paid');
+      if (error) throw error;
+      const rows = data || [];
+      const due = rows.reduce((sum, x) => sum + Number(x.current_payable || 0), 0);
+      sections.push(card('Fees Due', `<div class="big">${moneyLocal(due)}</div><table><tr><td>Open charges</td><td>${rows.length}</td></tr></table>`));
+    }
+
+    if (access.can('finance.view') || access.can('finance.manage')) {
+      const { data, error } = await client.from('qa_finance_transactions').select('direction,amount').limit(5000);
+      if (error) throw error;
+      const rows = data || [];
+      const income = rows.filter(x => x.direction === 'income').reduce((sum, x) => sum + Number(x.amount || 0), 0);
+      const expense = rows.filter(x => x.direction === 'expense').reduce((sum, x) => sum + Number(x.amount || 0), 0);
+      sections.push(card('Finance', `<div class="big">${moneyLocal(income - expense)}</div><table><tr><td>Income</td><td>${moneyLocal(income)}</td></tr><tr><td>Expense</td><td>${moneyLocal(expense)}</td></tr></table>`));
+    }
+
+    if (access.can('payroll.view') || access.can('payroll.manage')) {
+      const { data, error } = await client.from('qa_payroll_records').select('net_payable,status,payroll_month').order('payroll_month', { ascending: false }).limit(100);
+      if (error) throw error;
+      const rows = data || [];
+      const total = rows.filter(x => x.status !== 'cancelled').reduce((sum, x) => sum + Number(x.net_payable || 0), 0);
+      sections.push(card('Payroll', `<div class="big">${moneyLocal(total)}</div><table><tr><td>Recent records</td><td>${rows.length}</td></tr><tr><td>Latest month</td><td>${esc(rows[0]?.payroll_month || '—')}</td></tr></table>`));
+    }
+
+    grid.innerHTML = sections.length ? sections.join('') : '<p class="overview-report-muted" style="padding:16px">আপনার account-এর জন্য report-viewable module পাওয়া যায়নি।</p>';
+  }
+
   async function loadPreview() {
     const box = $('portalPreview');
     if (!box || access.profile.role !== 'owner') return;
@@ -358,6 +420,7 @@
     };
 
     void optional(loadMetrics, null, 'Dashboard metrics');
+    void optional(loadOverviewReports, 'overviewReportMessage', 'Report summary');
 
     if (profile.role === 'owner') {
       show('userManagement');
