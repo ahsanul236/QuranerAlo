@@ -49,3 +49,5 @@
   .finance-summary-grid{grid-template-columns:1fr}
   .finance-card.overall{grid-column:auto}
 }
+
+.management-layout .dashboard-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
