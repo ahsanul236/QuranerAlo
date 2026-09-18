@@ -46,8 +46,8 @@ async function load(){
   updateContext();
   const table=type==='teacher'?'qa_teachers':'qa_staff';
   const fields=type==='teacher'
-    ?'teacher_id,teacher_code,full_name,full_name_bn,phone,email,specialization,joining_date,active,notes,user_id'
-    :'staff_id,staff_code,full_name,phone,email,joining_date,active,notes,user_id';
+    ?'teacher_id,teacher_code,full_name,full_name_bn,phone,email,specialization,father_name,mother_name,nid_number,address,joining_date,active,notes,user_id'
+    :'staff_id,staff_code,full_name,phone,email,father_name,mother_name,nid_number,address,joining_date,active,notes,user_id';
   const{data,error}=await supabase.from(table).select(fields).eq(type==='teacher'?'teacher_id':'staff_id',id).maybeSingle();
   if(error)throw error;
   if(!data)throw Error('Profile পাওয়া যায়নি।');
