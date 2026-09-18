@@ -3,7 +3,7 @@ import { getAccess } from './authz.js';
 const config = window.QURANER_ALO_CONFIG;
 const supabase = createClient(config.supabaseUrl, config.supabasePublishableKey, { auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true} });
 const $=id=>document.getElementById(id);
-let mode='teacher';
+let mode=location.hash==='#helpers'?'helper':'teacher';
 let rows=[];
 let access=null;
 function msg(text,type=''){ $('formMessage').textContent=text; $('formMessage').className=`message-inline ${type}`.trim(); }
