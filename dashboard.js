@@ -337,14 +337,20 @@
     show('app');
     bindUI();
 
-    const view = new URLSearchParams(location.search).get('view') || 'overview';
-    if (view === 'settings') {
-      hide('overviewView');
-      show('settingsView');
-    } else {
-      show('overviewView');
-      hide('settingsView');
-    }
+
+    const renderView = () => {
+      const view = location.hash.replace('#', '') === 'settings' ? 'settings' : 'overview';
+      if (view === 'settings') {
+        hide('overviewView');
+        show('settingsView');
+      } else {
+        show('overviewView');
+        hide('settingsView');
+      }
+    };
+
+    renderView();
+    window.addEventListener('hashchange', renderView);
 
     const optional = async (fn, target, label) => {
       try { await fn(); }
