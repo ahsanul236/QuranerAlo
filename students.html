@@ -57,19 +57,29 @@
 <label>পূর্ণ নাম<input name="full_name" required></label>
 <label>লিঙ্গ<select name="gender"><option value="unspecified">নির্ধারিত নয়</option><option value="male">পুরুষ</option><option value="female">নারী</option></select></label>
 <label>জন্মতারিখ<input name="date_of_birth" type="date"></label>
-<label>Email<input name="email" type="email"></label>
 <label>ভর্তি তারিখ<input name="admission_date" type="date"></label>
 <label>অবস্থা<select name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
 <label class="full">নোট<textarea name="notes" rows="2"></textarea></label>
+<div class="form-subsection">
+<h3>পিতা-মাতা ও জন্ম নিবন্ধন</h3>
+<p class="hint">Student-এর parent information এবং birth registration তথ্য এখানে সংরক্ষণ করুন।</p>
+<div class="form-grid">
+<label>পিতার নাম<input id="fatherName" name="father_name"></label>
+<label>পিতার NID নম্বর<input id="fatherNid" name="father_nid" inputmode="numeric"></label>
+<label>মাতার নাম<input id="motherName" name="mother_name"></label>
+<label>মাতার NID নম্বর<input id="motherNid" name="mother_nid" inputmode="numeric"></label>
+<label class="full">জন্ম নিবন্ধন নম্বর<input id="birthRegistrationNo" name="birth_registration_no" inputmode="numeric"></label>
+</div>
+</div>
 
 <div class="form-subsection">
 <h3>Guardian Information</h3>
 <p class="hint">Student save করার সময়ই guardian record তৈরি হবে এবং এই student-এর সঙ্গে স্বয়ংক্রিয়ভাবে যুক্ত হবে। আলাদা Guardian section বা link করার প্রয়োজন নেই।</p>
 <div class="guardian-card">
-<h4>প্রধান Guardian</h4>
+<h4>প্রধান Guardian <span class="muted">(Father / Mother / Other)</span></h4>
 <div class="form-grid">
 <label>পূর্ণ নাম<input id="guardian1Name" required></label>
-<label>সম্পর্ক<select id="guardian1Relation" required><option value="">নির্বাচন করুন</option><option value="Father">Father</option><option value="Mother">Mother</option><option value="Guardian">Guardian</option><option value="Other">Other</option></select></label>
+<label>Guardian হিসেবে<select id="guardian1Relation" required><option value="">নির্বাচন করুন</option><option value="Father">Father</option><option value="Mother">Mother</option><option value="Other">Other</option></select></label>
 <label>ফোন<input id="guardian1Phone" inputmode="tel"></label>
 <label>Email<input id="guardian1Email" type="email"></label>
 <label class="full">ঠিকানা<textarea id="guardian1Address" rows="2"></textarea></label>
@@ -80,7 +90,7 @@
 <div class="tools" style="justify-content:space-between;align-items:center"><h4 style="margin:0">দ্বিতীয় Guardian <span class="muted">(ঐচ্ছিক)</span></h4><label style="display:flex;align-items:center;gap:8px;font-weight:600"><input id="guardian2Enabled" type="checkbox" style="width:auto"> যুক্ত করুন</label></div>
 <div id="guardian2Fields" class="form-grid hidden" style="margin-top:12px">
 <label>পূর্ণ নাম<input id="guardian2Name"></label>
-<label>সম্পর্ক<select id="guardian2Relation"><option value="">নির্বাচন করুন</option><option value="Father">Father</option><option value="Mother">Mother</option><option value="Guardian">Guardian</option><option value="Other">Other</option></select></label>
+<label>সম্পর্ক<select id="guardian2Relation"><option value="">নির্বাচন করুন</option><option value="Father">Father</option><option value="Mother">Mother</option><option value="Other">Other</option></select></label>
 <label>ফোন<input id="guardian2Phone" inputmode="tel"></label>
 <label>Email<input id="guardian2Email" type="email"></label>
 <label class="full">ঠিকানা<textarea id="guardian2Address" rows="2"></textarea></label>
@@ -94,7 +104,7 @@
 
 <div class="panel">
 <div class="panel-head"><h2>শিক্ষার্থী তালিকা</h2><span id="countLabel" class="eyebrow"></span></div>
-<div class="toolbar" style="padding:0 16px"><input id="search" placeholder="নাম / Student ID / Email দিয়ে খুঁজুন…"></div>
+<div class="toolbar" style="padding:0 16px"><input id="search" placeholder="নাম / Student ID দিয়ে খুঁজুন…"></div>
 <div class="table-wrap"><table class="student-table"><thead><tr><th>Student ID</th><th>নাম</th><th>ভর্তি</th><th>অবস্থা</th><th>Portal</th><th>Portal Access</th></tr></thead><tbody id="studentRows"></tbody></table></div>
 </div>
 <p id="message" class="footer-note" aria-live="polite"></p>
@@ -102,6 +112,6 @@
 </section>
 </main>
 <script src="supabase-config.js"></script>
-<script type="module" src="students.js?v=20260918-2"></script>
+<script type="module" src="students.js?v=20260918-3"></script>
 <script src="management-nav.js?v=20260918-4"></script></body>
 </html>
