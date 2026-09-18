@@ -1,15 +1,214 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-const c=window.QURANER_ALO_CONFIG;const supabase=createClient(c.supabaseUrl,c.supabasePublishableKey,{auth:{autoRefreshToken:true,persistSession:true}});const $=id=>document.getElementById(id);const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
-function formatDate(value){return value?new Date(`${value}T00:00:00`).toLocaleDateString('en-GB'):'—';}
-function formatTime(value){return value?new Date(value).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'—';}
-function safeLink(url){if(!url)return '';try{const u=new URL(url);if(!['http:','https:'].includes(u.protocol))return '';return `<a class="quick-link" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">Join</a>`;}catch{return '';}}
-function statusClass(value){const v=String(value||'').toLowerCase();if(['active','scheduled','present','completed'].includes(v))return 'on';if(['inactive','absent','cancelled'].includes(v))return 'off';return '';}
-async function getViewerProfile(session){const {data,error}=await supabase.from('qa_users').select('role,active').eq('user_id',session.user.id).maybeSingle();if(error)throw error;return data;}
-async function resolveTeacher(session){const previewId=new URLSearchParams(window.location.search).get('preview_teacher');const viewer=await getViewerProfile(session);if(previewId){if(!viewer||!viewer.active||viewer.role!=='owner')throw new Error('PREVIEW_NOT_ALLOWED');const {data,error}=await supabase.functions.invoke('portal-preview',{body:{entityType:'teacher',entityId:previewId}});if(error)throw error;if(!data?.ok||data.entityType!=='teacher'||!data.entity)throw new Error(data?.error||'PREVIEW_NOT_FOUND');const p=data.entity;$('previewBanner').classList.remove('hidden');$('previewText').textContent=`Read-only preview · ${p.teacher_code} · ${p.full_name}`;return p;}const {data:p,error}=await supabase.from('qa_teachers').select('teacher_id,teacher_code,full_name,specialization,active,user_id').eq('user_id',session.user.id).maybeSingle();if(error||!p)throw error||new Error('TEACHER_PROFILE_NOT_FOUND');return p;}
-async function init(){const {data:{session}}=await supabase.auth.getSession();if(!session){location.replace('./');return;}const p=await resolveTeacher(session);if(!p.active){await supabase.auth.signOut();location.replace('./');return;}$('teacherCode').textContent=p.teacher_code;$('teacherName').textContent=p.full_name;$('specialization').textContent=p.specialization||'—';$('status').textContent=p.active?'Active':'Inactive';
-const {data:en}=await supabase.from('qa_enrollments').select('student_id,course_code,start_date,end_date,status').eq('teacher_user_id',p.user_id).order('start_date',{ascending:false}).limit(100);const enrollmentRows=en||[];const ids=[...new Set(enrollmentRows.map(x=>x.student_id))];let names={};if(ids.length){const {data:s}=await supabase.from('qa_students').select('student_id,student_code,full_name').in('student_id',ids);names=Object.fromEntries((s||[]).map(x=>[x.student_id,`${x.student_code} · ${x.full_name}`]));}$('studentRows').innerHTML=enrollmentRows.map(x=>`<tr><td>${esc(names[x.student_id]||x.student_id)}</td><td>${esc(x.course_code)}</td><td>${esc(formatDate(x.start_date))}</td><td><span class="active-badge ${statusClass(x.status)}">${esc(x.status)}</span></td></tr>`).join('')||'<tr><td colspan="4">No assigned students.</td></tr>';
-const {data:classes}=await supabase.from('qa_class_sessions').select('session_id,session_date,starts_at,ends_at,course_code,topic,quran_portion,homework,status,meeting_link').eq('teacher_id',p.teacher_id).order('session_date',{ascending:false}).limit(30);const classRows=classes||[];$('classRows').innerHTML=classRows.map(x=>`<tr><td>${esc(formatDate(x.session_date))}<br><small>${esc(formatTime(x.starts_at))}${x.ends_at?`–${esc(formatTime(x.ends_at))}`:''}</small></td><td>${esc(x.course_code)}</td><td>${esc(x.topic||'Class')}${x.quran_portion?`<br><span class="muted">${esc(x.quran_portion)}</span>`:''}${x.homework?`<br><span class="muted">Homework: ${esc(x.homework)}</span>`:''}</td><td><span class="active-badge ${statusClass(x.status)}">${esc(x.status)}</span>${safeLink(x.meeting_link)}</td></tr>`).join('')||'<tr><td colspan="4">No class sessions.</td></tr>';
-const {data:q}=await supabase.from('qa_quran_progress').select('lesson_date,student_id,track,surah_name,juz_number,ayah_from,ayah_to,completion_percent,next_target').eq('teacher_id',p.teacher_id).order('lesson_date',{ascending:false}).limit(20);$('quranRows').innerHTML=(q||[]).map(x=>{const portion=x.surah_name||((x.juz_number&&`Juz ${x.juz_number}`)||'—');const range=(x.ayah_from||x.ayah_to)?` · Ayah ${x.ayah_from||''}-${x.ayah_to||''}`:'';return `<tr><td>${esc(formatDate(x.lesson_date))}</td><td>${esc(names[x.student_id]||x.student_id)}</td><td>${esc(x.track)} · ${esc(portion)}${esc(range)}</td><td>${x.completion_percent==null?'':`${esc(x.completion_percent)}% · `}${esc(x.next_target||'—')}</td></tr>`;}).join('')||'<tr><td colspan="4">No Quran progress entries.</td></tr>';
-const {data:att}=await supabase.from('qa_attendance').select('attendance_date,student_id,status,remarks').eq('teacher_id',p.teacher_id).order('attendance_date',{ascending:false}).limit(30);const attendance=att||[];$('presentCount').textContent=String(attendance.filter(x=>x.status==='present').length);$('absentCount').textContent=String(attendance.filter(x=>x.status==='absent').length);$('otherCount').textContent=String(attendance.filter(x=>!['present','absent'].includes(x.status)).length);$('attendanceRows').innerHTML=attendance.map(x=>`<tr><td>${esc(formatDate(x.attendance_date))}</td><td>${esc(names[x.student_id]||x.student_id)}</td><td><span class="active-badge ${statusClass(x.status)}">${esc(x.status)}</span></td><td>${esc(x.remarks||'')}</td></tr>`).join('')||'<tr><td colspan="4">No attendance records.</td></tr>';
-$('exitPreview')?.addEventListener('click',()=>location.href='dashboard.html');$('signOut').addEventListener('click',async()=>{await supabase.auth.signOut();location.replace('./');});$('loading').classList.add('hidden');$('app').classList.remove('hidden');}
-init().catch(e=>{console.error(e);if(e.message==='PREVIEW_NOT_ALLOWED'){location.replace('./');return}$('loading').textContent='Portal load করা যায়নি।';});
+
+const c = window.QURANER_ALO_CONFIG;
+const supabase = createClient(c.supabaseUrl, c.supabasePublishableKey, {
+  auth: { autoRefreshToken: true, persistSession: true }
+});
+const $ = (id) => document.getElementById(id);
+
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (ch) => ({
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#039;'
+}[ch]));
+
+function formatDate(value) {
+  return value ? new Date(`${value}T00:00:00`).toLocaleDateString('en-GB') : '—';
+}
+
+function formatTime(value) {
+  return value ? new Date(value).toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit'
+  }) : '—';
+}
+
+function safeLink(url) {
+  if (!url) return '';
+
+  try {
+    const u = new URL(url);
+    if (!['http:', 'https:'].includes(u.protocol)) return '';
+
+    return `<a class="quick-link" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">Join</a>`;
+  } catch {
+    return '';
+  }
+}
+
+function statusClass(value) {
+  const v = String(value || '').toLowerCase();
+
+  if (['active', 'scheduled', 'completed'].includes(v)) return 'on';
+  if (['inactive', 'cancelled'].includes(v)) return 'off';
+
+  return '';
+}
+
+async function getViewerProfile(session) {
+  const { data, error } = await supabase
+    .from('qa_users')
+    .select('role,active')
+    .eq('user_id', session.user.id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+async function resolveTeacher(session) {
+  const previewId = new URLSearchParams(window.location.search).get('preview_teacher');
+  const viewer = await getViewerProfile(session);
+
+  if (previewId) {
+    if (!viewer || !viewer.active || viewer.role !== 'owner') {
+      throw new Error('PREVIEW_NOT_ALLOWED');
+    }
+
+    const { data, error } = await supabase.functions.invoke('portal-preview', {
+      body: { entityType: 'teacher', entityId: previewId }
+    });
+
+    if (error) throw error;
+    if (!data?.ok || data.entityType !== 'teacher' || !data.entity) {
+      throw new Error(data?.error || 'PREVIEW_NOT_FOUND');
+    }
+
+    const previewTeacher = data.entity;
+    $('previewBanner').classList.remove('hidden');
+    $('previewText').textContent =
+      `Read-only preview · ${previewTeacher.teacher_code} · ${previewTeacher.full_name}`;
+    return previewTeacher;
+  }
+
+  const { data, error } = await supabase
+    .from('qa_teachers')
+    .select('teacher_id,teacher_code,full_name,specialization,active,user_id')
+    .eq('user_id', session.user.id)
+    .maybeSingle();
+
+  if (error || !data) {
+    throw error || new Error('TEACHER_PROFILE_NOT_FOUND');
+  }
+
+  return data;
+}
+
+async function init() {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    location.replace('./');
+    return;
+  }
+
+  const teacher = await resolveTeacher(session);
+
+  if (!teacher.active) {
+    await supabase.auth.signOut();
+    location.replace('./');
+    return;
+  }
+
+  $('teacherCode').textContent = teacher.teacher_code;
+  $('teacherName').textContent = teacher.full_name;
+  $('specialization').textContent = teacher.specialization || '—';
+  $('status').textContent = teacher.active ? 'Active' : 'Inactive';
+
+  const { data: enrollmentData, error: enrollmentError } = await supabase
+    .from('qa_enrollments')
+    .select('student_id,course_code,start_date,end_date,status')
+    .eq('teacher_user_id', teacher.user_id)
+    .order('start_date', { ascending: false })
+    .limit(100);
+
+  if (enrollmentError) throw enrollmentError;
+
+  const enrollments = enrollmentData || [];
+  const studentIds = [...new Set(enrollments.map((item) => item.student_id).filter(Boolean))];
+  let studentNames = {};
+
+  if (studentIds.length) {
+    const { data: students, error: studentsError } = await supabase
+      .from('qa_students')
+      .select('student_id,student_code,full_name')
+      .in('student_id', studentIds);
+
+    if (studentsError) throw studentsError;
+
+    studentNames = Object.fromEntries(
+      (students || []).map((student) => [
+        student.student_id,
+        `${student.student_code} · ${student.full_name}`
+      ])
+    );
+  }
+
+  $('studentRows').innerHTML = enrollments.map((item) => `
+    <tr>
+      <td>${esc(studentNames[item.student_id] || item.student_id)}</td>
+      <td>${esc(item.course_code)}</td>
+      <td>${esc(formatDate(item.start_date))}</td>
+      <td>
+        <span class="active-badge ${statusClass(item.status)}">${esc(item.status)}</span>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="4">No assigned students.</td></tr>';
+
+  const { data: classData, error: classError } = await supabase
+    .from('qa_class_sessions')
+    .select('session_id,session_date,starts_at,ends_at,course_code,topic,homework,status,meeting_link')
+    .eq('teacher_id', teacher.teacher_id)
+    .order('session_date', { ascending: false })
+    .limit(30);
+
+  if (classError) throw classError;
+
+  const classes = classData || [];
+
+  $('classRows').innerHTML = classes.map((item) => `
+    <tr>
+      <td>
+        ${esc(formatDate(item.session_date))}<br>
+        <small>
+          ${esc(formatTime(item.starts_at))}
+          ${item.ends_at ? `–${esc(formatTime(item.ends_at))}` : ''}
+        </small>
+      </td>
+      <td>${esc(item.course_code)}</td>
+      <td>
+        ${esc(item.topic || 'Class')}
+        ${item.homework ? `<br><span class="muted">Homework: ${esc(item.homework)}</span>` : ''}
+      </td>
+      <td>
+        <span class="active-badge ${statusClass(item.status)}">${esc(item.status)}</span>
+        ${safeLink(item.meeting_link)}
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="4">No class sessions.</td></tr>';
+
+  $('exitPreview')?.addEventListener('click', () => {
+    location.href = 'dashboard.html';
+  });
+
+  $('signOut').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    location.replace('./');
+  });
+
+  $('loading').classList.add('hidden');
+  $('app').classList.remove('hidden');
+}
+
+init().catch((error) => {
+  console.error('teacher portal error', error);
+
+  if (error.message === 'PREVIEW_NOT_ALLOWED') {
+    location.replace('./');
+    return;
+  }
+
+  $('loading').textContent = 'Portal load করা যায়নি।';
+});
