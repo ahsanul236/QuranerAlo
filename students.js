@@ -60,7 +60,7 @@ function renderStudents(list) {
 async function loadStudents() {
   const { data, error } = await supabase
     .from('qa_students')
-    .select('student_id,student_code,full_name,admission_date,status,user_id,email')
+    .select('student_id,student_code,full_name,admission_date,status,user_id')
     .order('created_at', { ascending: false });
   if (error) throw error;
   allStudents = data || [];
@@ -75,6 +75,12 @@ function getGuardianFromForm(prefix) {
     email: $(prefix + 'Email').value.trim(),
     address: $(prefix + 'Address').value.trim()
   };
+}
+
+function syncPrimaryGuardianName() {
+  const relation = $('guardian1Relation').value;
+  if (relation === 'Father') $('guardian1Name').value = $('fatherName').value.trim();
+  if (relation === 'Mother') $('guardian1Name').value = $('motherName').value.trim();
 }
 
 function resetGuardianForm() {
@@ -165,6 +171,10 @@ $('cancelStudent').addEventListener('click', () => {
   setFormMessage('');
 });
 
+$('guardian1Relation').addEventListener('change', syncPrimaryGuardianName);
+$('fatherName').addEventListener('input', syncPrimaryGuardianName);
+$('motherName').addEventListener('input', syncPrimaryGuardianName);
+
 $('guardian2Enabled').addEventListener('change', () => {
   $('guardian2Fields').classList.toggle('hidden', !$('guardian2Enabled').checked);
 });
@@ -173,7 +183,7 @@ $('search').addEventListener('input', () => {
   const q = $('search').value.trim().toLowerCase();
   if (!q) return renderStudents(allStudents);
   renderStudents(allStudents.filter((s) =>
-    [s.student_code, s.full_name, s.email].join(' ').toLowerCase().includes(q)
+    [s.student_code, s.full_name].join(' ').toLowerCase().includes(q)
   ));
 });
 
@@ -203,10 +213,14 @@ $('studentForm').addEventListener('submit', async (event) => {
         full_name: String(form.get('full_name') || '').trim(),
         gender: String(form.get('gender') || 'unspecified'),
         date_of_birth: form.get('date_of_birth') || '',
-        email: String(form.get('email') || '').trim(),
         admission_date: form.get('admission_date') || new Date().toISOString().slice(0, 10),
         status: String(form.get('status') || 'active'),
-        notes: String(form.get('notes') || '').trim()
+        notes: String(form.get('notes') || '').trim(),
+        father_name: String(form.get('father_name') || '').trim(),
+        father_nid: String(form.get('father_nid') || '').trim(),
+        mother_name: String(form.get('mother_name') || '').trim(),
+        mother_nid: String(form.get('mother_nid') || '').trim(),
+        birth_registration_no: String(form.get('birth_registration_no') || '').trim()
       },
       p_guardians: guardians
     });
