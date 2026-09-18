@@ -5,13 +5,10 @@
     ['Teachers', 'staff.html#teachers', 'teachers', '♙'],
     ['Helpers', 'staff.html#helpers', 'helpers', '♟'],
     ['Fees', 'fees.html', 'fees', '৳'],
-    ['Attendance', 'attendance.html', 'attendance', '✓'],
-    ['Quran Progress', 'quran.html', 'quran', '▤'],
     ['Payroll', 'payroll.html', 'payroll', '▣'],
     ['Income', 'finance.html#income', 'income', '↗'],
     ['Expense', 'finance.html#expense', 'expense', '↘'],
     ['Vouchers', 'finance.html#vouchers', 'vouchers', '▤'],
-    ['Reports', 'reports.html', 'reports', '▥'],
     ['Settings', 'dashboard.html#settings', 'settings', '⚙']
   ];
 
