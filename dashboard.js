@@ -10,7 +10,7 @@
     ['students.view','Students view'],['students.manage','Students manage'],
     ['guardians.view','Guardians view'],['guardians.manage','Guardians manage'],
     ['teachers.view','Teachers view'],['teachers.manage','Teachers manage'],
-    ['staff.view','Helpers/Staff view'],['staff.manage','Helpers/Staff manage'],
+    ['staff.view','Helpers view'],['staff.manage','Helpers manage'],
     ['fees.view','Fees view'],['fees.manage','Fees manage'],
     ['payments.view','Payments view'],['payments.manage','Payments manage'],
     ['payroll.view','Payroll view'],['payroll.manage','Payroll manage'],
