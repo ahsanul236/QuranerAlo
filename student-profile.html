@@ -68,11 +68,23 @@
 <div class="profile-field"><label>পূর্ণ নাম</label><input id="fullName" required></div>
 <div class="profile-field"><label>লিঙ্গ</label><select id="gender"><option value="unspecified">নির্ধারিত নয়</option><option value="male">পুরুষ</option><option value="female">নারী</option></select></div>
 <div class="profile-field"><label>জন্মতারিখ</label><input id="dateOfBirth" type="date"></div>
-<div class="profile-field"><label>Email</label><input id="email" type="email"></div>
 <div class="profile-field"><label>ভর্তি তারিখ</label><input id="admissionDate" type="date"></div>
 <div class="profile-field"><label>অবস্থা</label><select id="status"><option value="active">Active</option><option value="inactive">Inactive</option><option value="graduated">Graduated</option><option value="suspended">Suspended</option><option value="withdrawn">Withdrawn</option></select></div>
 <div class="profile-field full"><label>নোট</label><textarea id="notes" rows="3"></textarea></div>
+<div class="profile-card full">
+<div class="profile-card-head"><h2>পিতা-মাতা ও জন্ম নিবন্ধন</h2><span class="readonly-badge">Identity Information</span></div>
+<div class="profile-card-body">
+<p class="profile-note" style="margin-bottom:12px">পিতা-মাতার পরিচয় এবং জন্ম নিবন্ধন তথ্য এখানে সংরক্ষণ করুন।</p>
+<div class="profile-fields">
+<div class="profile-field"><label>পিতার নাম</label><input id="fatherName"></div>
+<div class="profile-field"><label>পিতার NID নম্বর</label><input id="fatherNid" inputmode="numeric"></div>
+<div class="profile-field"><label>মাতার নাম</label><input id="motherName"></div>
+<div class="profile-field"><label>মাতার NID নম্বর</label><input id="motherNid" inputmode="numeric"></div>
+<div class="profile-field"><label>জন্ম নিবন্ধন নম্বর</label><input id="birthRegistrationNo" inputmode="numeric"></div>
 </div>
+</div>
+</div>
+
 </div>
 </div>
 
@@ -95,7 +107,7 @@
 </section>
 </main>
 <script src="supabase-config.js"></script>
-<script type="module" src="student-profile.js?v=20260918-3"></script>
+<script type="module" src="student-profile.js?v=20260918-4"></script>
 <script src="management-nav.js?v=20260918-4"></script>
 </body>
 </html>
