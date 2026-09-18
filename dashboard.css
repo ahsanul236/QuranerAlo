@@ -4,7 +4,7 @@
 .management-layout{display:block;padding:0;min-height:100vh;--management-header-height:118px}
 .management-layout .dashboard-shell{width:100%;max-width:none;margin:0}
 .management-layout .dashboard-card{min-height:100vh;border-radius:0;border:0;box-shadow:none;padding:calc(var(--management-header-height) + 24px) 24px 24px}
-.management-layout .dashboard-card>.topbar{position:sticky;top:0;z-index:1200;background:var(--card);padding:14px 0;border-bottom:1px solid var(--line);box-shadow:0 3px 14px rgba(11,35,66,.06)}
+.management-layout .dashboard-card>.topbar{position:fixed;top:0;left:0;right:0;height:var(--management-header-height);z-index:2000;background:var(--card);padding:16px 24px;border-bottom:1px solid var(--line);box-shadow:0 3px 14px rgba(11,35,66,.06);margin:0}
 .management-layout .dashboard-card>#loading,
 .management-layout .dashboard-card>#app{margin-left:272px}
 .management-sidebar{position:fixed;left:0;top:var(--management-header-height);bottom:0;width:252px;z-index:1000;background:linear-gradient(180deg,#102e54 0%,#0b2342 100%);padding:15px 12px 24px;color:#fff;overflow-y:auto;box-shadow:8px 0 28px rgba(11,35,66,.12)}
