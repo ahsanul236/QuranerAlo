@@ -129,58 +129,21 @@
   }
 
   async function loadMetrics() {
-    const today = localDateISO();
-    const monthStart = `${today.slice(0, 7)}-01`;
-    const [s, sa, t, ta, h, ha, a, d] = await Promise.all([
-      countRows('qa_students'), countRows('qa_students', (q) => q.not('user_id', 'is', null)),
-      countRows('qa_teachers'), countRows('qa_teachers', (q) => q.not('user_id', 'is', null)),
+    const [s, sa, t, ta, h, ha] = await Promise.all([
+      countRows('qa_students'),
+      countRows('qa_students', (q) => q.not('user_id', 'is', null)),
+      countRows('qa_teachers'),
+      countRows('qa_teachers', (q) => q.not('user_id', 'is', null)),
       countRows('qa_staff', (q) => q.eq('staff_type', 'helper')),
-      countRows('qa_staff', (q) => q.eq('staff_type', 'helper').not('user_id', 'is', null)),
-      countRows('qa_attendance', (q) => q.eq('attendance_date', today)),
-      client.from('qa_fee_charges').select('current_payable').neq('status', 'paid')
+      countRows('qa_staff', (q) => q.eq('staff_type', 'helper').not('user_id', 'is', null))
     ]);
-    if (d.error) throw d.error;
 
-    $('studentCount').textContent = s;
-    $('teacherCount').textContent = t;
-    $('helperCount').textContent = h;
-    $('attendanceCount').textContent = a;
-    $('feesDue').textContent = money((d.data || []).reduce((sum, row) => sum + Number(row.current_payable || 0), 0));
-    $('portalActivatedCount').textContent = sa + ta + ha;
-    $('portalActivationMeta').textContent = `Student ${sa}/${s} · Teacher ${ta}/${t} · Helper ${ha}/${h}`;
-    $('studentActivationSummary').textContent = `${sa} / ${s}`;
-    $('studentActivationHint').textContent = s ? `${s - sa} জন এখনো activate করেনি` : 'কোনো student নেই';
-    $('teacherActivationSummary').textContent = `${ta} / ${t}`;
-    $('teacherActivationHint').textContent = t ? `${t - ta} জন এখনো activate করেনি` : 'কোনো teacher নেই';
-    $('helperActivationSummary').textContent = `${ha} / ${h}`;
-    $('helperActivationHint').textContent = h ? `${h - ha} জন এখনো activate করেনি` : 'কোনো helper নেই';
-
-    const financeRows = await loadFinanceRows();
-    if (!financeRows) {
-      ['dailyIncome','monthlyIncome','dailyExpense','monthlyExpense','overallNet','overallIncome','overallExpense']
-        .forEach((id) => { if ($(id)) $(id).textContent = '—'; });
-      return;
-    }
-
-    const sum = (rows, direction) => rows
-      .filter((row) => row.direction === direction)
-      .reduce((total, row) => total + Number(row.amount || 0), 0);
-
-    const todayRows = financeRows.filter((row) => row.transaction_date === today);
-    const monthRows = financeRows.filter((row) => row.transaction_date >= monthStart && row.transaction_date <= today);
-    const overallIncome = sum(financeRows, 'income');
-    const overallExpense = sum(financeRows, 'expense');
-    const overallNet = overallIncome - overallExpense;
-
-    $('dailyIncome').textContent = money(sum(todayRows, 'income'));
-    $('monthlyIncome').textContent = money(sum(monthRows, 'income'));
-    $('dailyExpense').textContent = money(sum(todayRows, 'expense'));
-    $('monthlyExpense').textContent = money(sum(monthRows, 'expense'));
-    $('overallIncome').textContent = money(overallIncome);
-    $('overallExpense').textContent = money(overallExpense);
-    $('overallNet').textContent = money(overallNet);
-    $('overallNet').classList.toggle('finance-positive', overallNet >= 0);
-    $('overallNet').classList.toggle('finance-negative', overallNet < 0);
+    $('studentActivationSummary').textContent = sa + ' / ' + s;
+    $('studentActivationHint').textContent = s ? (s - sa) + ' জন এখনো activate করেনি' : 'কোনো student নেই';
+    $('teacherActivationSummary').textContent = ta + ' / ' + t;
+    $('teacherActivationHint').textContent = t ? (t - ta) + ' জন এখনো activate করেনি' : 'কোনো teacher নেই';
+    $('helperActivationSummary').textContent = ha + ' / ' + h;
+    $('helperActivationHint').textContent = h ? (h - ha) + ' জন এখনো activate করেনি' : 'কোনো helper নেই';
   }
 
   async function loadOverviewReports() {
