@@ -28,6 +28,17 @@
 <div id="loading" class="notice-box">Finance module load হচ্ছে…</div>
 <div id="app" class="hidden">
 
+<template id="financeSummaryTemplate">
+  <div class="finance-summary">
+    <div class="dashboard-grid">
+      <div class="stat"><div class="kicker">Income</div><strong id="incomeTotal">৳0.00</strong></div>
+      <div class="stat"><div class="kicker">Expense</div><strong id="expenseTotal">৳0.00</strong></div>
+      <div class="stat"><div class="kicker">Net</div><strong id="netTotal">৳0.00</strong></div>
+      <div class="stat"><div class="kicker">Vouchers</div><strong id="voucherTotal">0</strong></div>
+    </div>
+  </div>
+</template>
+
 <section id="incomeView" class="finance-view">
   <div class="finance-page-head">
     <div><p class="eyebrow">INCOME MANAGEMENT</p><h1>আয় ব্যবস্থাপনা</h1><p class="muted">শুধু Income entry এবং Income records এখানে দেখানো হবে। প্রতিটি নতুন Income-এর জন্য Voucher স্বয়ংক্রিয়ভাবে তৈরি হবে।</p></div>
@@ -161,6 +172,6 @@
 </div><p class="footer-note">Income/Expense vouchers are generated server-side and linked to their source transaction.</p>
 </div></section></main>
 <script src="supabase-config.js"></script>
-<script type="module" src="finance.js?v=20260918-3"></script>
+<script type="module" src="finance.js?v=20260918-4"></script>
 <script src="management-nav.js?v=20260918-4"></script>
 </body></html>
