@@ -19,6 +19,7 @@
     if (path === 'dashboard.html' && hashView === 'settings') return 'settings';
     if (path === 'staff.html' && hash === 'helpers') return 'helpers';
     if (path === 'staff.html') return 'teachers';
+    if (path === 'staff-profile.html') return new URLSearchParams(location.search).get('type') === 'teacher' ? 'teachers' : 'helpers';
     if (path === 'finance.html' && hash === 'expense') return 'expense';
     if (path === 'finance.html' && hash === 'vouchers') return 'vouchers';
     if (path === 'finance.html') return 'income';
