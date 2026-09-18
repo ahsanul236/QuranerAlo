@@ -9,11 +9,8 @@
   const permissions = [
     ['students.view','Students view'],['students.manage','Students manage'],
     ['guardians.view','Guardians view'],['guardians.manage','Guardians manage'],
-    ['enrollments.view','Enrollments view'],['enrollments.manage','Enrollments manage'],
     ['teachers.view','Teachers view'],['teachers.manage','Teachers manage'],
     ['staff.view','Helpers/Staff view'],['staff.manage','Helpers/Staff manage'],
-    ['attendance.view','Attendance view'],['attendance.manage','Attendance manage'],
-    ['quran.view','Quran progress view'],['quran.manage','Quran progress manage'],
     ['fees.view','Fees view'],['fees.manage','Fees manage'],
     ['payments.view','Payments view'],['payments.manage','Payments manage'],
     ['payroll.view','Payroll view'],['payroll.manage','Payroll manage'],
@@ -23,9 +20,9 @@
     ['reports.view','Reports view']
   ];
   const manageToView = {
-    'students.manage':'students.view','guardians.manage':'guardians.view','enrollments.manage':'enrollments.view',
-    'teachers.manage':'teachers.view','staff.manage':'staff.view','attendance.manage':'attendance.view',
-    'quran.manage':'quran.view','fees.manage':'fees.view','payments.manage':'payments.view',
+    'students.manage':'students.view','guardians.manage':'guardians.view',
+    'teachers.manage':'teachers.view','staff.manage':'staff.view',
+    'fees.manage':'fees.view','payments.manage':'payments.view',
     'payroll.manage':'payroll.view','finance.manage':'finance.view','accounting.manage':'accounting.view',
     'vouchers.manage':'vouchers.view'
   };
@@ -127,17 +124,6 @@
     $('teacherActivationHint').textContent = t ? `${t - ta} জন এখনো activate করেনি` : 'কোনো teacher নেই';
     $('helperActivationSummary').textContent = `${ha} / ${h}`;
     $('helperActivationHint').textContent = h ? `${h - ha} জন এখনো activate করেনি` : 'কোনো helper নেই';
-  }
-
-  function addReports() {
-    if (!access.can('reports.view')) return;
-    const box = document.querySelector('.quick-links');
-    if (!box || box.querySelector('[href="reports.html"]')) return;
-    const a = document.createElement('a');
-    a.className = 'quick-link';
-    a.href = 'reports.html';
-    a.textContent = 'Reports';
-    box.appendChild(a);
   }
 
   async function loadPreview() {
@@ -292,8 +278,6 @@
     hide('loading');
     show('app');
     bindUI();
-    addReports();
-
     const optional = async (fn, target, label) => {
       try { await fn(); }
       catch (error) { console.error(label, error); if (target) message(target, `${label} load করা যায়নি।`, 'error'); }
