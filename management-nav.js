@@ -1,6 +1,6 @@
 (() => {
   const items = [
-    ['Overview', 'dashboard.html', 'overview', '⌂'],
+    ['Overview', 'dashboard.html#overview', 'overview', '⌂'],
     ['Students', 'students.html', 'students', '♙'],
     ['Teachers', 'staff.html#teachers', 'teachers', '♙'],
     ['Helpers', 'staff.html#helpers', 'helpers', '♟'],
@@ -12,14 +12,14 @@
     ['Expense', 'finance.html#expense', 'expense', '↘'],
     ['Vouchers', 'finance.html#vouchers', 'vouchers', '▤'],
     ['Reports', 'reports.html', 'reports', '▥'],
-    ['Settings', 'dashboard.html?view=settings', 'settings', '⚙']
+    ['Settings', 'dashboard.html#settings', 'settings', '⚙']
   ];
 
   function currentKey() {
     const path = location.pathname.split('/').pop() || 'dashboard.html';
     const hash = location.hash.replace('#', '');
-    const view = new URLSearchParams(location.search).get('view');
-    if (path === 'dashboard.html' && view === 'settings') return 'settings';
+    const hashView = location.hash.replace('#', '');
+    if (path === 'dashboard.html' && hashView === 'settings') return 'settings';
     if (path === 'staff.html' && hash === 'helpers') return 'helpers';
     if (path === 'staff.html') return 'teachers';
     if (path === 'finance.html' && hash === 'expense') return 'expense';
@@ -76,11 +76,13 @@
     backdrop.className = 'management-nav-backdrop';
     document.body.appendChild(backdrop);
 
-    const key = currentKey();
-    sidebar.querySelectorAll('[data-nav-key]').forEach((link) => {
-      if (link.dataset.navKey === key) link.classList.add('is-active');
-      link.addEventListener('click', () => closeMobile());
-    });
+    const syncActive = () => {
+      const key = currentKey();
+      sidebar.querySelectorAll('[data-nav-key]').forEach((link) => link.classList.toggle('is-active', link.dataset.navKey === key));
+    };
+    syncActive();
+    sidebar.querySelectorAll('[data-nav-key]').forEach((link) => link.addEventListener('click', () => closeMobile()));
+    window.addEventListener('hashchange', syncActive);
 
     toggle.addEventListener('click', () => {
       const open = sidebar.classList.toggle('is-open');
