@@ -16,7 +16,7 @@
 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .form-grid label{display:grid;gap:6px;font-weight:600;color:var(--navy2)}
 .form-grid input,.form-grid select,.form-grid textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit}
-.form-grid .full{grid-column:1/-1}
+.form-grid .full{grid-column:1/-1}.form-section-title{padding:12px 0 2px;margin-top:4px;border-top:1px solid var(--line)}.form-section-title h3{margin:0;color:var(--navy);font-size:16px}.form-section-title p{margin:3px 0 0;color:var(--muted);font-size:13px}
 .toolbar{display:flex;gap:10px;margin:16px 0}
 .toolbar input{flex:1;padding:11px 12px;border:1px solid var(--line);border-radius:12px;font:inherit}
 .table-wrap{overflow:auto}
@@ -52,6 +52,7 @@
 <label>বাংলা নাম<input id="fullNameBn" name="full_name_bn"></label>
 <label>ফোন<input id="phone" name="phone" inputmode="tel"></label>
 <label>Email<input id="email" name="email" type="email"></label>
+<div class="form-section-title full"><h3>Family & Identity</h3><p>পিতা-মাতা, NID এবং ঠিকানা সংরক্ষণ করুন।</p></div>
 <label id="specializationWrap">Specialization<input id="specialization" name="specialization" placeholder="Hifz / Tajweed / Nazera"></label>
 <label>পিতার নাম<input id="fatherName" name="father_name"></label>
 <label>মাতার নাম<input id="motherName" name="mother_name"></label>
