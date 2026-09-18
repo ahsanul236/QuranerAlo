@@ -332,7 +332,7 @@
 
     access = await buildAccess(session, profile);
     $('rolePill').textContent = (profile.role || 'viewer').toUpperCase();
-    $('userEmail')?.textContent = profile.email || session.user.email || '';
+    if ($('userEmail')) $('userEmail').textContent = profile.email || session.user.email || '';
     hide('loading');
     show('app');
     bindUI();
