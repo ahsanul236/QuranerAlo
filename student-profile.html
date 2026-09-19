@@ -37,7 +37,11 @@
 .identity-card{border-color:#d8e5f2}.identity-intro{margin-bottom:12px}@media(max-width:720px){.identity-card{grid-column:auto}}\n
 /* Profile action-row update — visual-only and preserves existing behavior */
 .profile-head{display:grid;grid-template-columns:1fr;justify-items:stretch;text-align:center;gap:16px;align-items:center}
-.profile-head>div:first-child{text-align:center}
+.profile-head .profile-identity{width:100%;min-width:0;text-align:center}
+.profile-head .profile-identity .eyebrow,
+.profile-head .profile-identity h1,
+.profile-head .profile-identity .muted{margin-left:auto;margin-right:auto;text-align:center}
+.profile-head .profile-identity h1{max-width:100%;overflow-wrap:anywhere;word-break:break-word}
 .profile-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:100%;align-items:stretch}
 .profile-actions a,.profile-actions button{width:100%;min-height:50px;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none}
 .whatsapp-btn{border:1px solid #25d366;background:#25d366;color:#fff;border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(37,211,102,.18)}
@@ -57,7 +61,7 @@
 <div id="errorBox" class="notice-box hidden"></div>
 <div id="app" class="hidden">
 <div class="profile-head">
-<div>
+<div class="profile-identity">
 <p class="eyebrow">STUDENT PROFILE</p>
 <h1 id="profileTitle">শিক্ষার্থী প্রোফাইল</h1>
 <p id="profileSubtitle" class="muted">Student ID: —</p>
@@ -79,6 +83,7 @@
 <div class="profile-field"><label>লিঙ্গ</label><select id="gender"><option value="unspecified">নির্ধারিত নয়</option><option value="male">পুরুষ</option><option value="female">নারী</option></select></div>
 <div class="profile-field"><label>জন্মতারিখ</label><input id="dateOfBirth" type="date"></div>
 <div class="profile-field"><label>ভর্তি তারিখ</label><input id="admissionDate" type="date"></div>
+<div class="profile-field"><label>ফোন নম্বর</label><input id="studentPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="01XXXXXXXXX"></div>
 <div class="profile-field"><label>অবস্থা</label><select id="status"><option value="active">Active</option><option value="inactive">Inactive</option><option value="graduated">Graduated</option><option value="suspended">Suspended</option><option value="withdrawn">Withdrawn</option></select></div>
 <div class="profile-field full"><label>নোট</label><textarea id="notes" rows="3"></textarea></div>
 </div>
@@ -117,7 +122,7 @@
 </section>
 </main>
 <script src="supabase-config.js"></script>
-<script type="module" src="student-profile.js?v=20260919-2"></script>
+<script type="module" src="student-profile.js?v=20260919-3"></script>
 <script src="management-nav.js?v=20260918-4"></script>
 </body>
 </html>
