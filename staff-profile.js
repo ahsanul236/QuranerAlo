@@ -32,7 +32,8 @@ function fill(){
   $('joiningDate').value=row.joining_date||'';
   $('active').value=String(row.active!==false);
   $('notes').value=row.notes||'';
-  $('subtitle').textContent=`${teacher?'Teacher':'Helper'} ID: ${teacher?row.teacher_code:row.staff_code}`;\n  setWhatsAppLink(row.phone);
+  $('subtitle').textContent=`${teacher?'Teacher':'Helper'} ID: ${teacher?row.teacher_code:row.staff_code}`;
+  setWhatsAppLink(row.phone);
 }
 function syncMode(){
   const canEdit=editing&&canManage();
