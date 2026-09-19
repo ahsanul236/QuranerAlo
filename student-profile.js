@@ -11,7 +11,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&
 const login=()=>location.replace('./');
 const msg=(t,type='')=>{$('saveMessage').textContent=t;$('saveMessage').className=`message-inline ${type}`.trim();};
 
-function fillStudent(){
+function normalizeWaNumber(value){const digits=String(value||'').trim().replace(/[^0-9]/g,'');if(!digits)return '';return digits.startsWith('00')?digits.slice(2):digits.startsWith('0')?'88'+digits:digits;}\nfunction setWhatsAppLink(phone){const btn=$('whatsappBtn');if(!btn)return;const digits=normalizeWaNumber(phone);if(!digits){btn.href='#';btn.classList.add('is-disabled');btn.setAttribute('aria-disabled','true');btn.title='এই profile-এর WhatsApp number সংরক্ষিত নেই।';btn.onclick=e=>e.preventDefault();return;}btn.href='https://wa.me/'+digits;btn.classList.remove('is-disabled');btn.removeAttribute('aria-disabled');btn.removeAttribute('title');btn.onclick=null;}\nfunction fillStudent(){
   $('studentCode').value=student.student_code||'';
   $('fullName').value=student.full_name||'';
   $('gender').value=['male','female','unspecified'].includes(student.gender)?student.gender:'unspecified';
@@ -25,7 +25,7 @@ function fillStudent(){
   $('motherNid').value=student.mother_nid||'';
   $('birthRegistrationNo').value=student.birth_registration_no||'';
   $('profileTitle').textContent=student.full_name||'শিক্ষার্থী প্রোফাইল';
-  $('profileSubtitle').textContent=`Student ID: ${student.student_code||'—'} · Status: ${String(student.status||'').replaceAll('_',' ')}`;
+  $('profileSubtitle').textContent=`Student ID: ${student.student_code||'—'} · Status: ${String(student.status||'').replaceAll('_',' ')}`;\n  setWhatsAppLink(student.phone);
 }
 
 function guardianHtml(g){
@@ -57,7 +57,7 @@ function mode(){
 
 async function load(){
   if(!studentId)throw new Error('Student ID সঠিক নয়।');
-  const {data:s,error}=await supabase.from('qa_students').select('student_id,student_code,full_name,gender,date_of_birth,admission_date,status,notes,father_name,father_nid,mother_name,mother_nid,birth_registration_no,user_id,created_at,updated_at').eq('student_id',studentId).maybeSingle();
+  const {data:s,error}=await supabase.from('qa_students').select('student_id,student_code,full_name,gender,date_of_birth,phone,admission_date,status,notes,father_name,father_nid,mother_name,mother_nid,birth_registration_no,user_id,created_at,updated_at').eq('student_id',studentId).maybeSingle();
   if(error)throw error;if(!s)throw new Error('Student profile পাওয়া যায়নি।');student=s;
   const {data:links,error:le}=await supabase.from('qa_student_guardians').select('guardian_id,is_primary').eq('student_id',studentId);
   if(le)throw le;
