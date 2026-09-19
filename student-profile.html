@@ -34,7 +34,17 @@
 .loading-profile{text-align:center;padding:40px;color:var(--muted)}
 .save-row{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
 @media(max-width:720px){.profile-grid,.profile-fields{grid-template-columns:1fr}.profile-card.full,.profile-field.full{grid-column:auto}.profile-actions{width:100%}.profile-actions a,.profile-actions button{flex:1}}
-.identity-card{border-color:#d8e5f2}.identity-intro{margin-bottom:12px}@media(max-width:720px){.identity-card{grid-column:auto}}\n</style>
+.identity-card{border-color:#d8e5f2}.identity-intro{margin-bottom:12px}@media(max-width:720px){.identity-card{grid-column:auto}}\n
+/* Profile action-row update — visual-only and preserves existing behavior */
+.profile-head{display:grid;grid-template-columns:1fr;justify-items:stretch;text-align:center;gap:16px;align-items:center}
+.profile-head>div:first-child{text-align:center}
+.profile-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:100%;align-items:stretch}
+.profile-actions a,.profile-actions button{width:100%;min-height:50px;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none}
+.whatsapp-btn{border:1px solid #25d366;background:#25d366;color:#fff;border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(37,211,102,.18)}
+.whatsapp-btn:hover:not(.is-disabled){background:#20bd5b;border-color:#20bd5b;transform:translateY(-1px)}
+.whatsapp-btn.is-disabled{opacity:.55;cursor:not-allowed;filter:grayscale(.15)}
+@media(max-width:720px){.profile-actions{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 <main class="dashboard-shell">
@@ -54,7 +64,7 @@
 </div>
 <div class="profile-actions">
 <a class="secondary-btn" href="students.html">← শিক্ষার্থী তালিকা</a>
-<button id="editBtn" class="primary-btn" type="button">Edit Profile</button><button id="removeBtn" class="danger-btn hidden" type="button">Remove This Profile</button>
+<button id="editBtn" class="primary-btn" type="button">Edit Profile</button><a id="whatsappBtn" class="whatsapp-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="Send message on WhatsApp"><span aria-hidden="true" style="font-size:18px">◉</span> Send message</a><button id="removeBtn" class="danger-btn hidden" type="button">Remove This Profile</button>
 </div>
 </div>
 
@@ -107,7 +117,7 @@
 </section>
 </main>
 <script src="supabase-config.js"></script>
-<script type="module" src="student-profile.js?v=20260918-6"></script>
+<script type="module" src="student-profile.js?v=20260919-1"></script>
 <script src="management-nav.js?v=20260918-4"></script>
 </body>
 </html>
