@@ -326,6 +326,7 @@ async function init() {
     location.replace('./');
   });
 
+  await setSchoolWhatsApp();
   $('loading').classList.add('hidden');
   $('app').classList.remove('hidden');
 }
