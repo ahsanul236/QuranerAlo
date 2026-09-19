@@ -213,6 +213,7 @@ $('studentForm').addEventListener('submit', async (event) => {
         full_name: String(form.get('full_name') || '').trim(),
         gender: String(form.get('gender') || 'unspecified'),
         date_of_birth: form.get('date_of_birth') || '',
+        phone: String(form.get('phone') || '').trim(),
         admission_date: form.get('admission_date') || new Date().toISOString().slice(0, 10),
         status: String(form.get('status') || 'active'),
         notes: String(form.get('notes') || '').trim(),
