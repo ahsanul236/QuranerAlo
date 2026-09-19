@@ -27,7 +27,8 @@ function fillStudent(){
   $('motherNid').value=student.mother_nid||'';
   $('birthRegistrationNo').value=student.birth_registration_no||'';
   $('profileTitle').textContent=student.full_name||'শিক্ষার্থী প্রোফাইল';
-  $('profileSubtitle').textContent=`Student ID: ${student.student_code||'—'} · Status: ${String(student.status||'').replaceAll('_',' ')}`;\n  setWhatsAppLink(student.phone);
+  $('profileSubtitle').textContent=`Student ID: ${student.student_code||'—'} · Status: ${String(student.status||'').replaceAll('_',' ')}`;
+  setWhatsAppLink(student.phone);
 }
 
 function guardianHtml(g){
