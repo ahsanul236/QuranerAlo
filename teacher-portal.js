@@ -6,6 +6,9 @@ const supabase = createClient(c.supabaseUrl, c.supabasePublishableKey, {
 });
 const $ = (id) => document.getElementById(id);
 
+async function setSchoolWhatsApp(){const btn=$('whatsappBtn');if(!btn)return;const{data,error}=await supabase.from('qa_app_settings').select('value').eq('key','school_profile').maybeSingle();if(error)throw error;const phone=data?.value?.phone||'';const digits=String(phone).replace(/[^0-9]/g,'').replace(/^00/,'');if(!digits)return;btn.href='https://wa.me/'+digits;btn.classList.remove('hidden');}
+
+
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (ch) => ({
   '&': '&amp;',
   '<': '&lt;',
