@@ -39,6 +39,10 @@ async function loadTransactions(){
   $('incomeRows').innerHTML=renderRows(income)||'<tr><td colspan="6">কোনো Income record পাওয়া যায়নি।</td></tr>';
   $('expenseRows').innerHTML=renderRows(expense)||'<tr><td colspan="6">কোনো Expense record পাওয়া যায়নি।</td></tr>';
 }
+function voucherPrintHref(v){
+  if(v.source_type==='fee_payment' || v.record_type==='fee_receipt')return 'receipt.html?type=fee&id='+encodeURIComponent(v.source_id);
+  return 'receipt.html?type=voucher&id='+encodeURIComponent(v.voucher_id);
+}
 async function loadVouchers(){
   if(!canVoucherView){
     voucherRecords=[];
@@ -47,11 +51,47 @@ async function loadVouchers(){
     $('voucherSearchSummary').textContent='Voucher view permission নেই।';
     return;
   }
-  const {data,error}=await supabase.from('qa_vouchers')
-    .select('voucher_id,voucher_no,voucher_type,voucher_date,amount,account_name,party_name,reference,description,status,source_type,source_id,created_at')
-    .order('created_at',{ascending:false}).limit(1000);
-  if(error)throw error;
-  voucherRecords=data||[];
+  const feeViewAllowed=!!(access&&(access.can('payments.view')||access.can('payments.manage')));
+  const [voucherResult,feeResult]=await Promise.all([
+    supabase.from('qa_vouchers')
+      .select('voucher_id,voucher_no,voucher_type,voucher_date,amount,account_name,party_name,reference,description,status,source_type,source_id,created_at')
+      .order('created_at',{ascending:false}).limit(1000),
+    feeViewAllowed
+      ? supabase.from('qa_fee_payments').select('payment_id,receipt_no,student_id,paid_at,amount,payment_method,reference,notes').order('paid_at',{ascending:false}).limit(1000)
+      : Promise.resolve({data:[],error:null})
+  ]);
+  if(voucherResult.error)throw voucherResult.error;
+  if(feeResult.error)throw feeResult.error;
+  const vouchers=voucherResult.data||[];
+  const feePayments=feeResult.data||[];
+  const existingFeeSources=new Set(vouchers.filter(v=>v.source_type==='fee_payment').map(v=>v.source_id));
+  const studentIds=[...new Set(feePayments.map(p=>p.student_id).filter(Boolean))];
+  let studentsById={};
+  if(studentIds.length){
+    const {data:students,error}=await supabase.from('qa_students').select('student_id,student_code,full_name').in('student_id',studentIds);
+    if(error)throw error;
+    studentsById=Object.fromEntries((students||[]).map(s=>[s.student_id,s]));
+  }
+  const feeRows=feePayments.filter(p=>!existingFeeSources.has(p.payment_id)).map(p=>{
+    const s=studentsById[p.student_id]||{};
+    return {
+      record_type:'fee_receipt',
+      voucher_id:null,
+      voucher_no:p.receipt_no,
+      voucher_type:'fee_receipt',
+      voucher_date:p.paid_at,
+      amount:p.amount,
+      account_name:p.payment_method,
+      party_name:s.full_name||s.student_code||'—',
+      reference:p.reference,
+      description:p.notes||'Monthly Fee',
+      status:'posted',
+      source_type:'fee_payment',
+      source_id:p.payment_id,
+      created_at:p.paid_at
+    };
+  });
+  voucherRecords=[...vouchers,...feeRows].sort((a,b)=>new Date(b.created_at||b.voucher_date||0).getTime()-new Date(a.created_at||a.voucher_date||0).getTime());
   renderVoucherRows();
 }
 function renderVoucherRows(){
@@ -80,7 +120,7 @@ function renderVoucherRows(){
     ? 'সব Voucher দেখানো হচ্ছে'
     : filtered.length+'টি Voucher filter অনুযায়ী পাওয়া গেছে';
 
-  $('voucherRows').innerHTML=filtered.map(v=>'<tr><td><strong>'+esc(v.voucher_no)+'</strong></td><td>'+esc(v.voucher_date)+'</td><td>'+esc(v.voucher_type)+'</td><td>৳'+money(v.amount)+'</td><td>'+esc(v.party_name||'—')+'</td><td><span class="voucher-source">'+esc(sourceLabel(v))+'</span></td><td>'+esc(v.status)+'</td><td><a class="quick-link" target="_blank" rel="noopener" href="receipt.html?type=voucher&id='+encodeURIComponent(v.voucher_id)+'">Print</a></td></tr>').join('')||'<tr><td colspan="8">এই filter অনুযায়ী কোনো Voucher পাওয়া যায়নি।</td></tr>';
+  $('voucherRows').innerHTML=filtered.map(v=>'<tr><td><strong>'+esc(v.voucher_no)+'</strong></td><td>'+esc(v.voucher_date)+'</td><td>'+esc(v.voucher_type)+'</td><td>৳'+money(v.amount)+'</td><td>'+esc(v.party_name||'—')+'</td><td><span class="voucher-source">'+esc(sourceLabel(v))+'</span></td><td>'+esc(v.status)+'</td><td><a class="quick-link" target="_blank" rel="noopener" href="'+voucherPrintHref(v)+'">Print</a></td></tr>').join('')||'<tr><td colspan="8">এই filter অনুযায়ী কোনো Voucher পাওয়া যায়নি।</td></tr>';
 }
 async function refresh(){await Promise.all([loadTransactions(),loadVouchers()]);updateView();}
 $('financeForm').addEventListener('submit',async e=>{
