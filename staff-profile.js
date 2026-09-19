@@ -4,7 +4,7 @@ const qs=new URLSearchParams(location.search),type=qs.get('type')==='teacher'?'t
 const msg=(t,k='')=>{$('message').textContent=t;$('message').className=`message-inline ${k}`.trim()};
 const canView=()=>access?.can(type==='teacher'?'teachers.view':'staff.view');
 const canManage=()=>access?.can(type==='teacher'?'teachers.manage':'staff.manage');
-function setInputs(on){['fullName','fullNameBn','phone','email','specialization','joiningDate','active','notes','fatherName','motherName','nidNumber','address'].forEach(x=>{if($(x))$(x).disabled=!on})}
+function normalizeWaNumber(value){const digits=String(value||'').trim().replace(/[^0-9]/g,'');if(!digits)return '';return digits.startsWith('00')?digits.slice(2):digits.startsWith('0')?'88'+digits:digits;}\nfunction setWhatsAppLink(phone){const btn=$('whatsappBtn');if(!btn)return;const digits=normalizeWaNumber(phone);if(!digits){btn.href='#';btn.classList.add('is-disabled');btn.setAttribute('aria-disabled','true');btn.title='এই profile-এর WhatsApp number সংরক্ষিত নেই।';btn.onclick=e=>e.preventDefault();return;}btn.href='https://wa.me/'+digits;btn.classList.remove('is-disabled');btn.removeAttribute('aria-disabled');btn.removeAttribute('title');btn.onclick=null;}\nfunction setInputs(on){['fullName','fullNameBn','phone','email','specialization','joiningDate','active','notes','fatherName','motherName','nidNumber','address'].forEach(x=>{if($(x))$(x).disabled=!on})}
 function updateContext(){
   const teacher=type==='teacher';
   $('topBack').href=`staff.html#${teacher?'teachers':'helpers'}`;
@@ -30,7 +30,7 @@ function fill(){
   $('joiningDate').value=row.joining_date||'';
   $('active').value=String(row.active!==false);
   $('notes').value=row.notes||'';
-  $('subtitle').textContent=`${teacher?'Teacher':'Helper'} ID: ${teacher?row.teacher_code:row.staff_code}`;
+  $('subtitle').textContent=`${teacher?'Teacher':'Helper'} ID: ${teacher?row.teacher_code:row.staff_code}`;\n  setWhatsAppLink(row.phone);
 }
 function syncMode(){
   const canEdit=editing&&canManage();
