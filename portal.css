@@ -21,3 +21,4 @@
   .portal-panel h2{padding:14px 15px}
   .portal-body{padding:14px}
 }
+\n.whatsapp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #25d366;background:#25d366;color:#fff;border-radius:8px;padding:9px 13px;font:inherit;font-weight:700;text-decoration:none;box-shadow:0 5px 14px rgba(37,211,102,.16)}.whatsapp-btn:hover{background:#20bd5b;border-color:#20bd5b;transform:translateY(-1px)}.whatsapp-btn.hidden{display:none!important}@media(max-width:620px){.portal-actions .whatsapp-btn{width:100%}}\n
