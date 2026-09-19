@@ -327,7 +327,6 @@ async function init() {
   });
 
   await setSchoolWhatsApp();
-  await setSchoolWhatsApp();
   $('loading').classList.add('hidden');
   $('app').classList.remove('hidden');
 }
